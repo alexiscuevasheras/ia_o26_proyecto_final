@@ -5,9 +5,13 @@ Aquí se entrega el proyecto final de la clase de IA. **Cada equipo tiene una ca
 la bitácora. Se entrega con dos *pull requests*: uno para la **propuesta** y otro para la
 **entrega**.
 
-Qué puede ser, los requisitos y cómo se presenta están en la
-[página del curso](https://rayalucaria.org/ia_o26/proyectos/proyecto-final/). Este
-README es el **cómo**: los pasos exactos.
+En el sitio del curso:
+
+- [El proyecto final](https://rayalucaria.org/ia_o26/proyectos/proyecto-final/): qué puede ser,
+  los requisitos y cómo se presenta (8 a 12 minutos, con reloj exacto).
+- [Cómo se entrega](https://rayalucaria.org/ia_o26/proyectos/como-entregar/): este mismo paso a paso.
+
+Este README es lo oficial para entregar. Si algo difiere, manda este README.
 
 > [!IMPORTANT]
 > - **Equipo de 1 o 2.** Si quieres otro tamaño, lo hablas con el profesor.
