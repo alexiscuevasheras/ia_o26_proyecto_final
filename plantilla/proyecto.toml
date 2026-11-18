@@ -1,0 +1,6 @@
+# Los datos de tu proyecto. Llena todo; el check del PR lo revisa.
+estado = "propuesta"   # "propuesta" en el primer PR; "entrega" en el segundo
+titulo = "Título del proyecto"
+tema = "Una línea: qué hace y qué parte del curso usa"
+equipo = ["usuario-a", "usuario-b"]   # logins de GitHub; si vas solo, uno
+demo = ""              # URL de la demo; vacío en la propuesta
