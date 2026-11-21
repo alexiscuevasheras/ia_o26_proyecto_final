@@ -6,14 +6,11 @@ Solo usa la partición oficial `train` (18 participantes); la prueba oficial
 Uso:
     python -m lsm.experimentos.e1_baselines datos/landmarks_d1.csv
 
-Las fotos de cada participante son fotogramas casi repetidos de un video, así
-que se usa una muestra al azar de FRACCION de las fotos de entrenamiento de
-cada pliegue (la validación usa todas). Así cada modelo se entrena en minutos.
+Los pliegues y la muestra de entrenamiento de cada uno salen de comun.py.
 """
 
 import argparse
 import json
-import platform
 import time
 from pathlib import Path
 
@@ -21,14 +18,11 @@ import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 
-from ..datos import pliegues_por_participante, verificar_sin_fugas
-from ..entrenar import K, ConfigRed, cargar_landmarks, entrenar_red, predecir_letras
+from ..entrenar import K, ConfigRed, entrenar_red, predecir_letras
 from ..evaluar import metricas
+from .comun import FRACCION, SEMILLA, datos_de_entrenamiento, entorno, indices_por_pliegue, resumir
 
-PLIEGUES = 6
-FRACCION = 0.25
 MUESTRA_SVM = 15_000  # el SVM con kernel RBF crece como n²
-SEMILLA = 0
 RED = ConfigRed(anchos_ocultos=(128, 64), eta=0.05, mu=1e-4, epocas=20, lote=64)
 LOGISTICA = ConfigRed(anchos_ocultos=(), eta=0.05, mu=1e-4, epocas=20, lote=64)
 
@@ -63,31 +57,21 @@ MODELOS = {
 }
 
 
-def resumir(valores):
-    return {"media": float(np.mean(valores)), "desviacion": float(np.std(valores)), "por_pliegue": valores}
-
-
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("csv", type=Path)
     ap.add_argument("--salida", type=Path, default=Path("resultados/e1_baselines.json"))
     args = ap.parse_args()
 
-    datos = cargar_landmarks(args.csv)
-    entrenamiento = datos.filtrar(datos.particion == "train")
+    entrenamiento, n_sin_mano = datos_de_entrenamiento(args.csv)
     X, y, persona = entrenamiento.features(), entrenamiento.letra, entrenamiento.participante
-    pliegues = pliegues_por_participante(persona, PLIEGUES, semilla=SEMILLA)
-    rng = np.random.default_rng(SEMILLA)
+    pliegues = indices_por_pliegue(persona)
 
     por_modelo = {nombre: {"f1_macro": [], "mcc": [], "exactitud": [], "segundos": []} for nombre in MODELOS}
     brecha_red = []
-    for i, validacion in enumerate(pliegues):
-        en_val = np.isin(persona, list(validacion))
-        verificar_sin_fugas({"entrenamiento": persona[~en_val], "validacion": persona[en_val]})
-        idx_ent = np.flatnonzero(~en_val)
-        idx_ent = rng.choice(idx_ent, int(FRACCION * len(idx_ent)), replace=False)
-        X_ent, y_ent, X_val, y_val = X[idx_ent], y[idx_ent], X[en_val], y[en_val]
-        print(f"pliegue {i + 1}: validación {sorted(validacion)}, {len(X_ent)} ent. / {len(X_val)} val.", flush=True)
+    for i, (validacion, idx_ent, idx_val) in enumerate(pliegues):
+        X_ent, y_ent, X_val, y_val = X[idx_ent], y[idx_ent], X[idx_val], y[idx_val]
+        print(f"pliegue {i + 1}: validación {validacion}, {len(X_ent)} ent. / {len(X_val)} val.", flush=True)
         for nombre, modelo in MODELOS.items():
             t0 = time.time()
             m = metricas(y_val, modelo(X_ent, y_ent, X_val), K)
@@ -101,15 +85,15 @@ def main():
 
     resultado = {
         "experimento": "E1 baselines contra la red",
-        "datos": {"fotos_con_mano_train": int(len(X)), "fotos_sin_mano_total": datos.n_sin_mano,
-                  "participantes_train": sorted(map(int, set(persona))), "pliegues": [sorted(p) for p in pliegues],
+        "datos": {"fotos_con_mano_train": int(len(X)), "fotos_sin_mano_total": n_sin_mano,
+                  "participantes_train": sorted(map(int, set(persona))), "pliegues": [v for v, _, _ in pliegues],
                   "fraccion_entrenamiento": FRACCION, "muestra_svm": MUESTRA_SVM,
                   "features": "60 (x, y, z de 20 puntos; espejo, centrado, escala; sin rotación)"},
         "config_red": vars(RED), "config_logistica": vars(LOGISTICA),
         "modelos": {nombre: {clave: resumir(v) for clave, v in valores.items()}
                     for nombre, valores in por_modelo.items()},
         "brecha_red_por_pliegue": brecha_red,
-        "entorno": {"python": platform.python_version(), "numpy": np.__version__},
+        "entorno": entorno(),
     }
     args.salida.parent.mkdir(parents=True, exist_ok=True)
     args.salida.write_text(json.dumps(resultado, indent=2, ensure_ascii=False))
