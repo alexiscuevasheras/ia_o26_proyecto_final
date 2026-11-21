@@ -2,6 +2,10 @@
 
 Uso:
     python -m lsm.exportar paridad web/fixtures/paridad.json
+    python -m lsm.exportar pesos modelos/pesos.json --csv datos/landmarks_d1.csv
+
+`pesos` entrena con toda la partición oficial de entrenamiento, con la
+configuración que eligió E2; la prueba oficial no se toca.
 
 Los pesos se redondean a float32 (la mitad de tamaño); Python calcula las
 salidas de referencia con esos mismos pesos redondeados, así que JavaScript
@@ -17,6 +21,8 @@ import numpy as np
 from redneuronal.red import Red, adelante, red_inicial
 
 from .datos import LETRAS_ESTATICAS
+from .entrenar import cargar_landmarks, entrenar_red
+from .experimentos.e3_ablaciones import config_elegida
 from .features import vector_entrada
 
 
@@ -24,14 +30,19 @@ def _a_float32(arreglo):
     return np.asarray(arreglo, dtype=np.float32).astype(float).tolist()
 
 
-def red_a_json(red, letras):
-    return {
+def red_a_json(red, letras, features=None):
+    """features: las opciones de vector_entrada con que se entrenó (rotar,
+    usar_z), para que la demo construya la entrada igual."""
+    datos = {
         "anchos": list(red.anchos),
         "activaciones": red.g[1:],
         "letras": list(letras),
         "W": [_a_float32(red.W[l]) for l in range(1, red.L + 1)],
         "b": [_a_float32(red.b[l]) for l in range(1, red.L + 1)],
     }
+    if features is not None:
+        datos["features"] = features
+    return datos
 
 
 def red_desde_json(datos):
@@ -83,13 +94,29 @@ def generar_paridad(semilla=0):
     return {"features": casos_features, "red": red_a_json(red, LETRAS_ESTATICAS), "casos_red": casos_red}
 
 
+def entrenar_pesos(ruta_csv, ruta_ajuste, rotar, usar_z):
+    datos = cargar_landmarks(ruta_csv)
+    entrenamiento = datos.filtrar(datos.particion == "train")
+    features = {"rotar": rotar, "usar_z": usar_z}
+    red = entrenar_red(entrenamiento.features(**features), entrenamiento.letra, config_elegida(ruta_ajuste))
+    return red_a_json(red, LETRAS_ESTATICAS, features)
+
+
 def main():
     ap = argparse.ArgumentParser(description="Exporta archivos para la demo web.")
-    ap.add_argument("que", choices=["paridad"])
+    ap.add_argument("que", choices=["paridad", "pesos"])
     ap.add_argument("salida", type=Path)
+    ap.add_argument("--csv", type=Path, default=Path("datos/landmarks_d1.csv"))
+    ap.add_argument("--ajuste", type=Path, default=Path("resultados/e2_ajuste.json"))
+    ap.add_argument("--rotar", action="store_true")
+    ap.add_argument("--sin-z", action="store_true")
     args = ap.parse_args()
+    if args.que == "paridad":
+        contenido = generar_paridad()
+    else:
+        contenido = entrenar_pesos(args.csv, args.ajuste, args.rotar, not args.sin_z)
     args.salida.parent.mkdir(parents=True, exist_ok=True)
-    args.salida.write_text(json.dumps(generar_paridad(), separators=(",", ":")))
+    args.salida.write_text(json.dumps(contenido, separators=(",", ":")))
     print(f"escrito {args.salida} ({args.salida.stat().st_size / 1024:.0f} KB)")
 
 

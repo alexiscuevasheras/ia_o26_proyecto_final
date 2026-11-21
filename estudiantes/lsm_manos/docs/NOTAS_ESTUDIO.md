@@ -88,3 +88,58 @@ de los participantes 6, 8 y 17 (0.890): cambiar de persona es lo difícil.
    sobre si las letras se separan con una frontera lineal en los 60 números?
 3. ¿Por qué la clase mayoritaria da F1 macro 0.004 pero exactitud 0.049? ¿Qué ventaja tiene el F1 macro
    como métrica principal?
+
+---
+
+## Hito 3 · Ajuste, castigo y ablaciones (2026-11-21)
+
+### Qué hicimos
+
+- `experimentos/comun.py`: E1, E2 y E3 usan exactamente los mismos 6 pliegues y las mismas muestras.
+- E2 (`resultados/e2_ajuste.json`): rejilla de 27 configuraciones (anchos 64 / 128–64 / 256–128,
+  η ∈ {0.02, 0.05, 0.1}, μ ∈ {0, 1e-4, 1e-3}), 40 épocas, con curvas medias por época.
+- E3 (`resultados/e3_ablaciones.json`): con la configuración de E2, cuatro variantes del vector de entrada.
+- `python -m lsm.exportar pesos modelos/pesos.json`: red preliminar entrenada con toda la partición
+  oficial de entrenamiento (1 MB; `modelos/` no se sube) para probar la demo.
+
+### E2: lo que salió
+
+- Mejor configuración: 60–256–128–21, η = 0.1, μ = 0, época 39: F1 macro 0.942 ± 0.022. Ese número
+  está **sesgado hacia arriba** (se eligió mirando estos mismos pliegues); la estimación honesta será la
+  prueba oficial, que se abre una vez al final.
+- Las mejores configuraciones (0.938–0.942) difieren mucho menos que la variación entre pliegues:
+  es una meseta, no un ganador claro. Contra la red sin ajustar de E1 (0.932) tampoco hay una mejora
+  que podamos afirmar.
+- Con η = 0.1 fijo, las curvas oscilan de época a época; la «mejor época» tiene algo de suerte.
+- **Castigo (Q4).** En la 60–256–128–21 con η = 0.1, a la época 40:
+
+  | μ | pérdida entrenamiento | pérdida validación | brecha | F1 validación |
+  |---|---|---|---|---|
+  | 0 | 0.038 | 0.224 | 0.186 | 0.940 |
+  | 1e-4 | 0.068 | 0.210 | 0.142 | 0.934 |
+  | 1e-3 | 0.208 | 0.283 | 0.075 | 0.909 |
+
+  El ridge sí achica la brecha, pero con 1e-3 la red ya no ajusta bien ni el entrenamiento y el F1 baja.
+  Con estos datos, lo que separa entrenamiento de validación es el cambio de persona, no el sobreajuste
+  que el ridge corrige.
+
+### E3: ablaciones (media ± desviación, 6 pliegues)
+
+| entrada | F1 macro | pliegues en que pierde contra la base |
+|---|---|---|
+| x, y, z sin rotar (60), la base | 0.942 ± 0.022 | — |
+| x, y, z rotado (60) | 0.931 ± 0.035 | 5 de 6 |
+| x, y sin rotar (40) | 0.941 ± 0.018 | 4 de 6, por muy poco |
+| x, y rotado (40) | 0.930 ± 0.033 | 5 de 6 |
+
+Rotar la palma hacia arriba empeora casi siempre, y en el pliegue difícil (participantes 6, 8 y 17)
+cae 0.046: la orientación de la mano lleva información. z no aporta ni estorba de forma clara.
+Nos quedamos con x, y, z sin rotar.
+
+### Tres preguntas (contestar sin ver el código)
+
+1. ¿Por qué el F1 de la configuración elegida en E2 no sirve como estimación final, y qué número sí?
+2. Con μ = 1e-3 la brecha baja a menos de la mitad, pero el F1 empeora. ¿Cómo se explica con
+   «sesgo contra varianza»?
+3. ¿Qué letras de la LSM esperarías que se confundan si se quita la orientación al rotar? Comprobarlo
+   en la matriz de confusión es una tarea pendiente.
