@@ -29,6 +29,13 @@ MSL-ABC/<grupo>/<train|test>/<Letra>/S<participante>-<Letra>-<código>-<n>.jpg
 - `<código>`: grupo A usa `4`, grupo C usa `5`, el grupo B usa `1`, `2` y `3` (probablemente un eje de rotación cada uno; sin verificar).
 - Imágenes por grupo: A 83,264 train / 9,439 test; B 84,019 / 8,841; C 84,814 / 9,339. ~4,600 imágenes por participante en el grupo A.
 
+Descarga verificada el 2026-11-20: el md5 coincide con el publicado. Todas las fotos son de 360 × 360.
+En `lsm-abc-A/test` (9,439 fotos), MediaPipe detectó la mano en el 99.8 % (la letra D es la peor, 97.1 %)
+y marcó todas como «Left».
+
+Zenodo limita cada descarga a unos 0.6 MB/s (4.8 GB tardan más de 2 horas). Si la computadora se
+duerme, se cortan las conexiones: conviene correrla con `caffeinate` y conectada a la corriente.
+
 **Problema práctico:** es un solo 7z de 4.8 GB, así que no se puede bajar «un subconjunto» directamente.
 Eso afecta el plan de Docker (sección 11 del plan); ver DECISIONES.md.
 
