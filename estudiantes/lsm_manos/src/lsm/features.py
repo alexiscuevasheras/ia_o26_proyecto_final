@@ -28,7 +28,8 @@ NUM_PUNTOS = 21
 def normalizar(puntos, es_izquierda, aspecto=1.0, rotar=False):
     """puntos: arreglo (N, 21, 3) o (21, 3) con x, y, z de MediaPipe.
     es_izquierda: bool o arreglo de N bools (lateralidad de la mano tal como
-    se ve en la imagen sin espejo). aspecto: ancho/alto de la imagen.
+    se ve en la imagen sin espejo). aspecto: ancho/alto de la imagen (un
+    número o uno por mano).
     Devuelve los puntos normalizados con la misma forma."""
     P = np.array(puntos, dtype=float)
     una_sola = P.ndim == 2
@@ -38,7 +39,8 @@ def normalizar(puntos, es_izquierda, aspecto=1.0, rotar=False):
         raise ValueError(f"se esperaban (N, 21, 3) puntos, llegó {P.shape}")
 
     izquierda = np.broadcast_to(np.asarray(es_izquierda, dtype=bool), (P.shape[0],))
-    P[:, :, [0, 2]] *= aspecto  # z de MediaPipe viene en la escala de x
+    aspectos = np.broadcast_to(np.asarray(aspecto, dtype=float), (P.shape[0],))
+    P[:, :, [0, 2]] *= aspectos[:, None, None]  # z de MediaPipe viene en la escala de x
     P[izquierda, :, 0] *= -1.0
     P -= P[:, MUNECA:MUNECA + 1, :]
 
