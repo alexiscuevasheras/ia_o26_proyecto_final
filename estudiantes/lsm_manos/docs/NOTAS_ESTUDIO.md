@@ -50,3 +50,41 @@ finitas sobre la red grande confirma la derivación.
    **todos** los bloques, y no solo en la última capa?
 3. Con `η = 0.1` y `μ = 0.01`, ¿cuánto acercan a cero un peso de 0.7 el ridge y el lasso en un paso?
    ¿Por qué el lasso deja pesos exactamente en cero y el ridge no? (Esto es lo que usaremos en Q1.)
+
+---
+
+## Hito 2 · Datos, features y primer experimento (2026-11-20)
+
+### Qué hicimos
+
+- Descargamos D1 (4.8 GB, md5 verificado) y extrajimos los 21 puntos de cada foto con MediaPipe
+  (`landmarks.py`): 279,716 fotos, mano detectada en el 98.7 %.
+- `features.py`: corrige la proporción de la imagen (x y z vienen en la escala del ancho), espeja las
+  manos izquierdas, centra en la muñeca, escala por la palma y, opcionalmente, rota. `features.js` hace
+  lo mismo en el navegador y una prueba lo compara con Python.
+- `evaluar.py`: F1 macro (métrica principal), MCC y exactitud, probadas contra scikit-learn.
+- E1 (`resultados/e1_baselines.json`): 6 pliegues agrupados por participante, solo con la partición
+  oficial de entrenamiento. La prueba oficial (participantes 18 y 20) sigue cerrada.
+
+### Resultados de E1 (media ± desviación en 6 pliegues)
+
+| modelo | F1 macro |
+|---|---|
+| clase mayoritaria | 0.004 ± 0.000 |
+| regresión logística (red sin capas ocultas) | 0.870 ± 0.019 |
+| kNN (k = 5) | 0.887 ± 0.023 |
+| SVM RBF (15 mil fotos) | 0.931 ± 0.016 |
+| red 60–128–64–21 (sin ajustar) | 0.932 ± 0.021 |
+
+La red y el SVM empatan: la diferencia es mucho menor que la variación entre pliegues. Las capas
+ocultas sí ayudan: la red supera por unos 6 puntos a la misma red sin capas ocultas. La brecha
+entrenamiento–validación de la red es de unos 3 puntos (0.965 contra 0.932), y el peor pliegue es el
+de los participantes 6, 8 y 17 (0.890): cambiar de persona es lo difícil.
+
+### Tres preguntas (contestar sin ver el código)
+
+1. ¿Por qué separamos por participante y no al azar por foto? ¿Qué número saldría inflado si no lo hiciéramos?
+2. La regresión logística es «la misma red con L = 1». ¿Qué le falta para llegar a 0.93, y qué dice eso
+   sobre si las letras se separan con una frontera lineal en los 60 números?
+3. ¿Por qué la clase mayoritaria da F1 macro 0.004 pero exactitud 0.049? ¿Qué ventaja tiene el F1 macro
+   como métrica principal?
