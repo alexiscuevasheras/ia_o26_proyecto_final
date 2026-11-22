@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alfabeto LSM</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <header>
+    <h1>Alfabeto manual de la LSM</h1>
+    <p>Una red neuronal escrita desde cero en NumPy reconoce 21 letras estáticas a partir de los
+      21 puntos de la mano. Todo corre en tu navegador: el video no sale de tu computadora.</p>
+  </header>
+
+  <main>
+    <section class="camara">
+      <div class="marco">
+        <video id="video" playsinline muted></video>
+        <canvas id="puntos"></canvas>
+      </div>
+      <button id="iniciar">Encender la cámara</button>
+      <p id="estado" role="status">Carga los pesos y el detector de manos…</p>
+    </section>
+
+    <section class="resultado">
+      <h2>Letras más probables</h2>
+      <ol id="mejores" aria-live="polite"></ol>
+
+      <h2>Lo que ve la red</h2>
+      <p class="nota">La mano después de las features: espejada si es izquierda, centrada en la
+        muñeca y escalada por la palma. Esto (sin la muñeca) es la entrada a(0).</p>
+      <canvas id="normalizada" width="240" height="240"></canvas>
+    </section>
+
+    <section class="activaciones">
+      <h2>Activaciones capa por capa</h2>
+      <p class="nota">Cada cuadro es una neurona; más claro, activación más alta dentro de su capa.
+        a(l) = g(W(l) a(l−1) + b(l)).</p>
+      <div id="capas"></div>
+    </section>
+  </main>
+
+  <script type="module" src="demo.js"></script>
+</body>
+</html>

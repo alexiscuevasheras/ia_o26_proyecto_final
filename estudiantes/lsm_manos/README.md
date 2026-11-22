@@ -13,12 +13,18 @@ traduce la LSM.
 Pruebas del núcleo de la red (Python 3.12 o más nuevo):
 
 ```bash
-make entorno     # crea .venv e instala numpy y pytest
-make pruebas     # reproduce el hilo 2–3–2–1 del curso y compara gradientes
+make entorno     # crea .venv con numpy, pytest y las herramientas de comprobación
+make pruebas     # reproduce el hilo 2–3–2–1 del curso, compara gradientes y la paridad Python–JS
 ```
 
-La demo con Docker (`docker compose up --build` y abrir <http://localhost:8000>) llega en
-la semana 2; por ahora el contenedor sirve la página de ejemplo de la plantilla.
+Demo local (preliminar), con `modelos/pesos.json` y `modelos/hand_landmarker.task` en su lugar:
+
+```bash
+make demo        # y abrir http://localhost:8000/web/ en Chrome; pide permiso para la cámara
+```
+
+La red corre en el navegador con `web/red.js`; el detector de manos (MediaPipe Tasks Vision
+1.2.3) se baja de jsDelivr. La versión con Docker todavía sirve la página de la plantilla.
 
 ## Datos y modelos
 

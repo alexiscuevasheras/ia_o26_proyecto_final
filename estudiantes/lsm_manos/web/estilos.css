@@ -1,0 +1,107 @@
+:root {
+  --fondo: #f6f5f2;
+  --tinta: #1d1d1f;
+  --suave: #6b6b70;
+  --acento: #2f6fdf;
+  --tarjeta: #ffffff;
+  --borde: #dddcd7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #151517;
+    --tinta: #ececee;
+    --suave: #a0a0a8;
+    --acento: #6c9cff;
+    --tarjeta: #1f1f23;
+    --borde: #34343a;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--fondo);
+  color: var(--tinta);
+  font: 16px/1.5 system-ui, sans-serif;
+}
+
+header { max-width: 70ch; margin-bottom: 16px; }
+h1 { font-size: 1.6rem; margin: 0 0 4px; }
+h2 { font-size: 1rem; margin: 16px 0 8px; }
+.nota { color: var(--suave); font-size: 0.85rem; margin: 0 0 8px; }
+
+main {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+}
+
+section {
+  background: var(--tarjeta);
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.activaciones { grid-column: 1 / -1; }
+
+@media (max-width: 760px) {
+  main { grid-template-columns: 1fr; }
+}
+
+.marco { position: relative; }
+
+/* Se ve como espejo, pero MediaPipe recibe el cuadro sin espejo, igual que las fotos de D1. */
+.marco video, .marco canvas {
+  width: 100%;
+  display: block;
+  border-radius: 8px;
+  transform: scaleX(-1);
+}
+
+.marco canvas { position: absolute; inset: 0; height: 100%; }
+
+button {
+  margin-top: 12px;
+  padding: 8px 16px;
+  font: inherit;
+  border: 0;
+  border-radius: 8px;
+  background: var(--acento);
+  color: #fff;
+  cursor: pointer;
+}
+
+button:disabled { opacity: 0.5; cursor: default; }
+
+#estado { color: var(--suave); font-size: 0.9rem; }
+
+#mejores { list-style: none; padding: 0; margin: 0; }
+
+#mejores li {
+  display: grid;
+  grid-template-columns: 3ch 1fr 6ch;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+#mejores li:first-child .letra { font-size: 2.4rem; }
+.letra { font-size: 1.6rem; font-weight: 700; text-align: center; }
+.barra { height: 10px; border-radius: 5px; background: var(--borde); overflow: hidden; }
+.barra span { display: block; height: 100%; background: var(--acento); }
+.porcentaje { text-align: right; font-variant-numeric: tabular-nums; color: var(--suave); }
+
+#normalizada {
+  width: 240px;
+  max-width: 100%;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+}
+
+.capa { margin-bottom: 12px; }
+.capa h3 { font-size: 0.85rem; font-weight: 600; margin: 0 0 4px; color: var(--suave); }
+.capa canvas { width: 100%; image-rendering: pixelated; border-radius: 4px; }
