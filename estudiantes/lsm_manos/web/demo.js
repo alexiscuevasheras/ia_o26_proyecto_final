@@ -55,9 +55,9 @@ function mostrarMejores(red, probabilidades) {
 function procesarCuadro(detector, red, pintarCapas) {
   const resultado = detector.detectForVideo(video, performance.now());
   const mano = resultado.landmarks[0];
-  dibujarMano(lienzoPuntos, mano, HandLandmarker.HAND_CONNECTIONS);
   if (!mano) {
     estado.textContent = "No veo ninguna mano.";
+    dibujarMano(lienzoPuntos, null);
     dibujarNormalizada(lienzoNormalizada, null);
     return;
   }
@@ -65,6 +65,7 @@ function procesarCuadro(detector, red, pintarCapas) {
   // La etiqueta Left/Right se interpreta igual que en Python porque el cuadro llega sin espejo.
   const esIzquierda = resultado.handedness[0][0].categoryName === "Left";
   const puntos = mano.map(({ x, y, z }) => [x, y, z]);
+  dibujarMano(lienzoPuntos, puntos, HandLandmarker.HAND_CONNECTIONS);
   const opciones = { aspecto: video.videoWidth / video.videoHeight, rotar: red.features.rotar, usarZ: red.features.usar_z };
   const x = vectorEntrada(puntos, esIzquierda, opciones);
   const { a } = adelante(red, x);
@@ -102,7 +103,12 @@ async function main() {
     const cuadro = () => {
       if (video.currentTime !== ultimoTiempo) { // no repetir el mismo cuadro del video
         ultimoTiempo = video.currentTime;
-        procesarCuadro(detector, red, pintarCapas);
+        try {
+          procesarCuadro(detector, red, pintarCapas);
+        } catch (error) { // un cuadro con error no debe detener la demo
+          estado.textContent = `Error en este cuadro: ${error.message}`;
+          console.error(error);
+        }
       }
       requestAnimationFrame(cuadro);
     };

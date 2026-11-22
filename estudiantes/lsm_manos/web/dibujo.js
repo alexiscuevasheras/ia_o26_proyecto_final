@@ -38,8 +38,8 @@ export function dibujarNormalizada(canvas, puntos, conexiones) {
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (!puntos) return;
-  const escala = canvas.width / 5; // la mano normalizada cabe en unas ±2.5 palmas
-  const centro = [canvas.width / 2, canvas.height * 0.7];
+  const escala = canvas.width / 4; // la mano normalizada cabe en unas ±2 palmas
+  const centro = [canvas.width / 2, canvas.height * 0.75];
   ctx.strokeStyle = ctx.fillStyle = color("--tinta");
   ctx.lineWidth = 2;
   dibujarHueso(ctx, puntos, conexiones, ([x, y]) => [centro[0] + x * escala, centro[1] + y * escala]);
