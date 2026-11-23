@@ -5,8 +5,18 @@ Lengua de Señas Mexicana con una red neuronal escrita desde cero en NumPy, con 
 de la unidad 10 del curso. **El alfabeto manual no es la LSM completa**: este sistema no
 traduce la LSM.
 
-> Estado: en construcción. Por ahora existe el núcleo de la red (`src/redneuronal/`) con sus
-> pruebas. La demo, los datos y los experimentos vienen en los siguientes hitos.
+La red pierde exactitud con personas que no vio al entrenar: ese es el problema que ataca el
+proyecto. Tres ideas, todas con la maquinaria de la unidad 10 y medidas con validación por
+participante:
+
+1. **Se adapta a quien la usa:** con unos cuantos ejemplos de cada letra, la página reentrena la
+   última capa con descenso de gradiente, en el navegador (experimento E8).
+2. **Sabe decir «no sé»:** probabilidades calibradas y un umbral elegido con validación (E7).
+3. **Explica su decisión:** ∂ŷ/∂x por retropropagación hasta la entrada, para ver qué puntos de
+   la mano pesaron más.
+
+> Estado: preliminar, para presentar la propuesta. Ya existen la red con sus pruebas, la
+> extracción de puntos, los experimentos E1–E3 y una primera demo con la cámara.
 
 ## Cómo correrlo
 

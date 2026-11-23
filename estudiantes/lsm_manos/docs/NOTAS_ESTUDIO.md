@@ -143,3 +143,42 @@ Nos quedamos con x, y, z sin rotar.
    «sesgo contra varianza»?
 3. ¿Qué letras de la LSM esperarías que se confundan si se quita la orientación al rotar? Comprobarlo
    en la matriz de confusión es una tarea pendiente.
+
+---
+
+## Hito 4 · Adaptación a la persona (2026-11-22)
+
+### Qué hicimos
+
+- `adaptar.py`: reentrena solo W(L) y b(L) con pocos ejemplos de una persona; las capas ocultas
+  quedan fijas. Hiperparámetros fijados antes de ver resultados: lote completo, η = 0.05, 100 pasos.
+- Revisamos los códigos de grabación de D1: para una misma persona y letra, los 5 códigos tienen
+  distinto número de cuadros y posición, y la distancia entre códigos es de 3 a 40 veces la de dentro
+  de un código. Los tratamos como grabaciones distintas (no está confirmado por el autor).
+- E8 (`resultados/e8_adaptacion.json`): para cada participante de validación, se adapta con k fotos
+  por letra de **una** grabación y se evalúa con sus **otras 4**, para no evaluar con cuadros vecinos.
+
+### Resultados de E8 (F1 macro, media ± desviación sobre los 18 participantes)
+
+| k por letra | F1 macro | participantes que mejoran | peor participante |
+|---|---|---|---|
+| 0 (red base) | 0.939 ± 0.037 | — | 0.824 |
+| 1 | 0.939 ± 0.032 | 6 de 18 | 0.843 |
+| 2 | 0.940 ± 0.031 | 5 de 18 | 0.854 |
+| 5 | 0.942 ± 0.031 | 8 de 18 | 0.857 |
+| 10 | 0.943 ± 0.030 | 10 de 18 | 0.862 |
+| 20 | 0.944 ± 0.030 | 10 de 18 | 0.863 |
+
+En promedio la mejora es mínima (+0.005 con k = 20). Pero ayuda justo donde la red falla: el
+participante 8 pasa de 0.824 a 0.863 y el 6 de 0.939 a 0.967; los que ya estaban arriba de 0.95
+quedan igual o bajan un poco. En D1 todas las fotos vienen del mismo montaje de cámara, así que el
+cambio entre personas es chico; con una webcam distinta el cambio debería ser mayor, y eso se medirá
+con clips propios (E6). Probar más pasos o adaptar más capas exige elegirlos sin ver estos mismos
+participantes.
+
+### Tres preguntas (contestar sin ver el código)
+
+1. ¿Por qué evaluar con fotos de la misma grabación que se usó para adaptar inflaría el resultado?
+2. Si las capas ocultas quedan fijas, ¿por qué adaptar la última capa es un problema convexo y
+   reentrenar toda la red no?
+3. ¿Por qué la adaptación puede empeorar a alguien que ya estaba en 0.97?
