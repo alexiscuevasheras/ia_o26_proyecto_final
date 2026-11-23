@@ -16,6 +16,7 @@ from .landmarks import COORDENADAS
 
 INDICE_LETRA = {letra: k for k, letra in enumerate(LETRAS_ESTATICAS)}
 K = len(LETRAS_ESTATICAS)
+CAMPOS = ("puntos", "es_izquierda", "aspecto", "letra", "participante", "codigo", "grupo", "particion")
 
 
 @dataclass
@@ -26,13 +27,13 @@ class Conjunto:
     aspecto: np.ndarray  # (N,) ancho / alto
     letra: np.ndarray  # (N,) índice 0..K−1
     participante: np.ndarray
+    codigo: np.ndarray  # grabación; por los puntos, los 5 códigos de una persona y letra parecen videos distintos
     grupo: np.ndarray  # "A", "B", "C"
     particion: np.ndarray  # "train" o "test", la oficial
     n_sin_mano: int
 
     def filtrar(self, mascara):
-        campos = {c: getattr(self, c)[mascara] for c in
-                  ("puntos", "es_izquierda", "aspecto", "letra", "participante", "grupo", "particion")}
+        campos = {c: getattr(self, c)[mascara] for c in CAMPOS}
         return Conjunto(**campos, n_sin_mano=0)
 
     def features(self, rotar=False, usar_z=True):
@@ -48,7 +49,8 @@ def cargar_landmarks(ruta_csv):
     cache = ruta_csv.with_suffix(".npz")
     if cache.exists() and cache.stat().st_mtime > ruta_csv.stat().st_mtime:
         d = np.load(cache, allow_pickle=False)
-        return Conjunto(**{c: d[c] for c in d.files if c != "n_sin_mano"}, n_sin_mano=int(d["n_sin_mano"]))
+        if set(d.files) == set(CAMPOS) | {"n_sin_mano"}:  # un caché viejo sin algún campo se rehace
+            return Conjunto(**{c: d[c] for c in CAMPOS}, n_sin_mano=int(d["n_sin_mano"]))
 
     filas, sin_mano = [], 0
     with ruta_csv.open(newline="") as f:
@@ -63,6 +65,7 @@ def cargar_landmarks(ruta_csv):
         "aspecto": np.array([int(r["ancho"]) / int(r["alto"]) for r in filas]),
         "letra": np.array([INDICE_LETRA[r["letra"]] for r in filas]),
         "participante": np.array([int(r["participante"]) for r in filas]),
+        "codigo": np.array([int(r["codigo"]) for r in filas]),
         "grupo": np.array([r["grupo"] for r in filas]),
         "particion": np.array([r["particion"] for r in filas]),
     }
