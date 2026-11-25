@@ -24,24 +24,18 @@ from ..secuencias import POR_MANO
 from .comun import dejando_una_persona_fuera, linea, preparar, resumir_metricas
 
 
-def sin_columnas(X, columnas):
-    X = X.copy()
-    X[:, :, columnas] = 0
-    return X
-
-
 NO_DOMINANTE = list(range(POR_MANO, 2 * POR_MANO))
 POSICION = [0, 1, POR_MANO, POR_MANO + 1]
 FORMA = list(range(2, 62)) + list(range(POR_MANO + 2, POR_MANO + 62))
 
 VARIANTES = {
-    "completo": (16, None, ConfigGRU()),
-    "sin_aumento": (16, None, ConfigGRU(aumentar=False)),
-    "solo_dominante": (16, NO_DOMINANTE, ConfigGRU()),
-    "sin_posicion": (16, POSICION, ConfigGRU()),
-    "sin_forma": (16, FORMA, ConfigGRU()),
-    "T=8": (8, None, ConfigGRU()),
-    "T=32": (32, None, ConfigGRU()),
+    "completo": (16, ConfigGRU()),
+    "sin_aumento": (16, ConfigGRU(aumentar=False)),
+    "solo_dominante": (16, ConfigGRU(columnas_fuera=tuple(NO_DOMINANTE))),
+    "sin_posicion": (16, ConfigGRU(columnas_fuera=tuple(POSICION))),
+    "sin_forma": (16, ConfigGRU(columnas_fuera=tuple(FORMA))),
+    "T=8": (8, ConfigGRU()),
+    "T=32": (32, ConfigGRU()),
 }
 
 
@@ -50,25 +44,28 @@ def main():
     ap.add_argument("uaemex", type=Path)
     ap.add_argument("--variantes", nargs="+", default=list(VARIANTES))
     ap.add_argument("--salida", type=Path, default=Path("resultados/p2_ablaciones.json"))
+    ap.add_argument("--agregar", action="store_true", help="conservar las variantes ya guardadas en --salida")
     ap.add_argument("--procesos", type=int, default=6)
     args = ap.parse_args()
 
     por_T = {}
-    resultados = {}
+    previo = json.loads(args.salida.read_text()) if args.agregar and args.salida.exists() else {}
+    resultados = previo.get("resultados", {})
     for nombre in args.variantes:
-        t, columnas, config = VARIANTES[nombre]
+        t, config = VARIANTES[nombre]
         if t not in por_T:
             por_T[t] = preparar([args.uaemex], t)
         datos, y, glosas, _ = por_T[t]
-        X = datos.X if columnas is None else sin_columnas(datos.X, columnas)
-        por_persona, _ = dejando_una_persona_fuera(partial(ModeloGRU, config), datos, X, y, len(glosas), args.procesos)
+        por_persona, _ = dejando_una_persona_fuera(partial(ModeloGRU, config), datos, datos.X, y, len(glosas), args.procesos)
         resultados[nombre] = {"resumen": resumir_metricas(por_persona), "por_persona": por_persona}
         print(linea(nombre, resultados[nombre]["resumen"]), flush=True)
 
     args.salida.parent.mkdir(parents=True, exist_ok=True)
     args.salida.write_text(json.dumps({
         "experimento": "P2 ablaciones de la GRU, dejando una persona fuera (UAEMex)",
-        "variantes": {k: {"T": VARIANTES[k][0], "config": vars(VARIANTES[k][2])} for k in args.variantes},
+        "variantes": {**previo.get("variantes", {}), **{k: {"T": VARIANTES[k][0], "config": {**vars(VARIANTES[k][1]),
+                                                            "columnas_fuera": len(VARIANTES[k][1].columnas_fuera)}}
+                      for k in args.variantes}},
         "resultados": resultados,
         "entorno": entorno(),
     }, indent=2, ensure_ascii=False))

@@ -46,6 +46,7 @@ class ConfigGRU:
     eta: float = 2e-3
     mu: float = 1e-5
     aumentar: bool = True
+    columnas_fuera: tuple = ()  # ablaciones: se ponen en cero después del aumento
     semilla: int = 0
 
 
@@ -60,18 +61,29 @@ class ConfigMLP:
     semilla: int = 0
 
 
+def sin_columnas(X, columnas):
+    if not columnas:
+        return X
+    X = X.copy()
+    X[:, :, list(columnas)] = 0
+    return X
+
+
 class ModeloGRU:
     def __init__(self, config=ConfigGRU()):
         self.config = config
 
     def ajustar(self, X, y, K, al_terminar_epoca=None):
         c = self.config
+        X = sin_columnas(X, c.columnas_fuera)
         self.estandar = Estandar.ajustar(X)
         rng = np.random.default_rng(c.semilla)
         red = recurrente.gru_inicial(X.shape[2], c.oculta, K, c.semilla)
         opt = recurrente.Adam(eta=c.eta)
         for epoca in range(c.epocas):
-            Xe = aumentar(X, rng) if c.aumentar else X
+            # El aumento mueve y ensucia todas las columnas; las quitadas se vuelven a
+            # poner en cero, o la estandarización (desviación ≈ 0) las haría enormes.
+            Xe = sin_columnas(aumentar(X, rng), c.columnas_fuera) if c.aumentar else X
             Xe = np.transpose(self.estandar(Xe), (1, 2, 0))  # T × D × n
             Y = np.eye(K)[:, y]
             orden = rng.permutation(len(y))
@@ -87,7 +99,7 @@ class ModeloGRU:
 
     def probabilidades(self, X):
         """(n, K)."""
-        Xe = np.transpose(self.estandar(X), (1, 2, 0))
+        Xe = np.transpose(self.estandar(sin_columnas(X, self.config.columnas_fuera)), (1, 2, 0))
         return np.concatenate([recurrente.predecir(self.red, Xe[:, :, i:i + 512]).T
                                for i in range(0, Xe.shape[2], 512)])
 
