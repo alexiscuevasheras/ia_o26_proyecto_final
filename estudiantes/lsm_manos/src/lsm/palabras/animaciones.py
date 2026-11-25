@@ -27,8 +27,8 @@ import numpy as np
 from ..datos import LETRAS_ESTATICAS
 from ..entrenar import cargar_landmarks
 from ..features import normalizar
-from .conjunto import cortes, dominancia_por_persona, leer_vocabulario, personas_de
-from .secuencias import secuencia
+from .conjunto import centros_por_persona, cortes, dominancia_por_persona, leer_secuencias, leer_vocabulario, personas_de
+from .secuencias import preparar_sena, reordenar, secuencia
 
 FPS = 15
 CUERPO_INDICES = [0, 2, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 23, 24]
@@ -101,18 +101,22 @@ def animaciones_de_glosas(rutas):
     vocabulario = leer_vocabulario()
     candidatos = {}  # glosa → [(prioridad, X, datos para el clip, origen)]
     for ruta in rutas:
-        z = np.load(ruta)
+        z = leer_secuencias(ruta)
         personas = personas_de(z)
-        dominante = dominancia_por_persona(z, personas)
+        respaldo = centros_por_persona(z, personas)
+        dominante = dominancia_por_persona(z, personas, respaldo)
         es_iteso = z["dataset"][0] == "iteso"
         for i, (a, b) in enumerate(cortes(z)):
             cuerpo_visto = np.isfinite(z["cuerpo_3d"][a:b, 11, 0]).mean()
             if cuerpo_visto < MINIMO_CUERPO:
                 continue
             glosa = vocabulario[(z["dataset"][i], z["clase"][i])]["glosa"]
-            X = secuencia(z["cuerpo"][a:b], z["manos"][a:b], float(z["aspecto"][i]), dominante[personas[i]])
+            centro = respaldo.get(personas[i])
+            X = secuencia(z["cuerpo"][a:b], z["manos"][a:b], float(z["aspecto"][i]), dominante[personas[i]], 16, centro)
+            *_, origen = preparar_sena(z["cuerpo"][a:b], z["manos"][a:b], float(z["aspecto"][i]), centro)
+            manos_3d = reordenar(z["manos_3d"][a:b], origen)  # mismas manos por brazo que en las features
             candidatos.setdefault(glosa, []).append(
-                (int(es_iteso), X, (z["cuerpo_3d"][a:b], z["manos_3d"][a:b], None if es_iteso else CUADROS_UAEMEX),
+                (int(es_iteso), X, (z["cuerpo_3d"][a:b], manos_3d, None if es_iteso else CUADROS_UAEMEX),
                  f"{personas[i]}/{z['ident'][i]}"))
     glosas = {}
     for glosa, lista in sorted(candidatos.items()):

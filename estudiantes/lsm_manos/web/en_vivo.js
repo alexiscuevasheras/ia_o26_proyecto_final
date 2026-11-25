@@ -10,7 +10,7 @@
 import { vectorEntrada } from "./features.js";
 import { adelante } from "./red.js";
 import { adelanteGRU, mejoresGlosas } from "./gru.js";
-import { manoQueMasSeMueve, marcoEnVivo, secuencia } from "./secuencias.js";
+import { cuadrosAEntrada, marcoEnVivo, secuencia } from "./secuencias.js";
 import { Segmentador } from "./segmentador.js";
 
 const MUNECA_IZQ = 15;
@@ -48,6 +48,7 @@ export class TraductorEnVivo {
     this.umbral = umbral;
     this.segmentador = new Segmentador();
     this.recientes = [];
+    this.centro = null;
     this.votosDominancia = [0, 0];
     this.reiniciarLetra();
   }
@@ -75,7 +76,9 @@ export class TraductorEnVivo {
    */
   agregar(cuadro, aspecto) {
     this.recientes = [...this.recientes, cuadro].slice(-CUADROS_DEL_MARCO);
-    const marco = marcoEnVivo(this.recientes, aspecto);
+    // Si en la ventana no hay hombros plausibles, se queda el último centro bueno.
+    const marco = marcoEnVivo(this.recientes, aspecto, this.centro);
+    this.centro = marco.centro;
     const enSenaAntes = this.segmentador.enSena;
     const sena = this.segmentador.agregar(cuadro, marco);
     let evento = null;
@@ -115,9 +118,9 @@ export class TraductorEnVivo {
   }
 
   cerrarSena(sena, aspecto) {
-    this.votosDominancia[manoQueMasSeMueve(sena)] += 1;
+    this.votosDominancia[cuadrosAEntrada(sena, aspecto, null, this.centro).dominante] += 1;
     if (this.letrasDeLaSena.length) return null; // fue deletreo: las letras ya salieron
-    const x = secuencia(sena, aspecto, this.dominante);
+    const x = secuencia(sena, aspecto, this.dominante, undefined, this.centro);
     const { probabilidades, resumen, estados } = adelanteGRU(this.modelo, x);
     const opciones = mejoresGlosas(this.modelo, probabilidades, 3);
     const comun = { opciones, resumen, x, estados };

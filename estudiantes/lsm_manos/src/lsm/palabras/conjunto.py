@@ -16,7 +16,8 @@ from pathlib import Path
 
 import numpy as np
 
-from .secuencias import T, mano_que_mas_se_mueve, secuencia
+from .secuencias import (T, centro_de_hombros, corregir_aspecto, escala_de_palmas, mano_que_mas_se_mueve,
+                         preparar_sena, secuencia)
 
 VOCABULARIO = Path(__file__).parent / "vocabulario.csv"
 
@@ -51,6 +52,13 @@ class Secuencias:
         return len(self.glosa)
 
 
+def leer_secuencias(ruta):
+    """El .npz de extraer.py ya en memoria: indexar un .npz comprimido lo
+    descomprime completo en cada acceso (cargar UAEMex tardaba 4 minutos)."""
+    with np.load(ruta) as z:
+        return {k: z[k] for k in z.files}
+
+
 def cortes(z):
     inicio = z["inicio"]
     return [(inicio[i], inicio[i + 1]) for i in range(len(inicio) - 1)]
@@ -62,12 +70,35 @@ def personas_de(z):
     return np.array([persona_iteso(i) for i in z["ident"]])
 
 
-def dominancia_por_persona(z, personas):
-    """{persona: 0 o 1} por mayoría de la mano que más se mueve en sus señas."""
+def dominancia_por_persona(z, personas, centros=None):
+    """{persona: 0 o 1} por mayoría de la mano que más se mueve en sus señas
+    (con las manos ya seguidas, ver secuencias.seguir_manos)."""
+    centros = centros or {}
     votos = {}
-    for (a, b), p in zip(cortes(z), personas):
-        votos.setdefault(p, Counter())[mano_que_mas_se_mueve(z["manos"][a:b])] += 1
+    for i, ((a, b), p) in enumerate(zip(cortes(z), personas)):
+        manos, *_ = preparar_sena(z["cuerpo"][a:b], z["manos"][a:b], float(z["aspecto"][i]), centros.get(p))
+        votos.setdefault(p, Counter())[mano_que_mas_se_mueve(manos)] += 1
     return {p: c.most_common(1)[0][0] for p, c in votos.items()}
+
+
+def centros_por_persona(z, personas):
+    """{persona: centro de hombros en todas sus señas} para UAEMex, donde cada
+    persona se grabó con la cámara fija; sirve de respaldo a las señas en que
+    no hubo ningún cuadro con hombros plausibles. En ITESO (teléfono en mano)
+    no aplica y se devuelve {}."""
+    if z["dataset"][0] != "uaemex":
+        return {}
+    centros = {}
+    todos = cortes(z)
+    for p in set(personas):
+        partes = [corregir_aspecto(z["cuerpo"][a:b], z["manos"][a:b], float(z["aspecto"][i]))
+                  for i, (a, b) in enumerate(todos) if personas[i] == p]
+        cuerpo = np.concatenate([c for c, _ in partes])
+        manos = np.concatenate([m for _, m in partes])
+        centro = centro_de_hombros(cuerpo, escala_de_palmas(manos) or 1.0)
+        if centro is not None:
+            centros[p] = centro
+    return centros
 
 
 def cargar(rutas, t=T):
@@ -75,11 +106,12 @@ def cargar(rutas, t=T):
     vocabulario = leer_vocabulario()
     partes = []
     for ruta in rutas:
-        z = np.load(ruta)
+        z = leer_secuencias(ruta)
         personas = personas_de(z)
-        dominante = dominancia_por_persona(z, personas)
-        X = np.stack([secuencia(z["cuerpo"][a:b], z["manos"][a:b], float(z["aspecto"][i]), dominante[personas[i]], t)
-                      for i, (a, b) in enumerate(cortes(z))])
+        respaldo = centros_por_persona(z, personas)
+        dominante = dominancia_por_persona(z, personas, respaldo)
+        X = np.stack([secuencia(z["cuerpo"][a:b], z["manos"][a:b], float(z["aspecto"][i]), dominante[personas[i]], t,
+                                respaldo.get(personas[i])) for i, (a, b) in enumerate(cortes(z))])
         glosas = np.array([vocabulario[(d, c)]["glosa"] for d, c in zip(z["dataset"], z["clase"])])
         partes.append(Secuencias(X, glosas, personas, z["dataset"], z["ident"]))
     return Secuencias(*(np.concatenate([getattr(p, c) for p in partes])

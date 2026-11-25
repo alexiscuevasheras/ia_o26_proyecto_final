@@ -27,35 +27,63 @@ function corregirAspecto(cuadros, aspecto) {
   }));
 }
 
-/** Marco del cuerpo de cuadros crudos (sin corregir la proporción): para el video en vivo. */
-export function marcoEnVivo(cuadros, aspecto) {
-  return marcoDelCuerpo(corregirAspecto(cuadros, aspecto));
+const PALMA_POR_HOMBRO = 0.24;
+const HOMBROS_PLAUSIBLES = [0.6, 1.6];
+
+function escalaDePalmas(cuadros) {
+  const palmas = cuadros.flatMap(({ manos }) => manos.filter(Boolean).map((m) => Math.hypot(m[9][0] - m[0][0], m[9][1] - m[0][1])));
+  return palmas.length ? Math.max(mediana(palmas) / PALMA_POR_HOMBRO, 1e-3) : null;
 }
 
-function marcoDelCuerpo(cuadros) {
-  const validos = cuadros.filter((c) => c.cuerpo && Number.isFinite(c.cuerpo[HOMBRO_IZQ][0]) && Number.isFinite(c.cuerpo[HOMBRO_DER][0]));
-  if (!validos.length) return marcoSinCuerpo(cuadros);
-  const h = [HOMBRO_IZQ, HOMBRO_DER].map((i) => [0, 1].map((e) => mediana(validos.map((c) => c.cuerpo[i][e]))));
-  const centro = [(h[0][0] + h[1][0]) / 2, (h[0][1] + h[1][1]) / 2];
-  return { centro, escala: Math.max(Math.hypot(h[0][0] - h[1][0], h[0][1] - h[1][1]), 1e-3) };
-}
-
-// Supuesto burdo, igual que en Python: palma ≈ 0.4 anchos de hombro y el pecho
-// ~1.5 anchos debajo de la mano más alta.
-function marcoSinCuerpo(cuadros) {
-  const palmas = [];
-  const munecas = [];
-  for (const { manos } of cuadros) {
-    for (const m of manos) {
-      if (!m) continue;
-      palmas.push(Math.hypot(m[9][0] - m[0][0], m[9][1] - m[0][1]));
-      munecas.push(m[0]);
+function centroDeHombros(cuadros, escala) {
+  const medios = [];
+  for (const { cuerpo } of cuadros) {
+    if (!cuerpo) continue;
+    const [a, b] = [cuerpo[HOMBRO_IZQ], cuerpo[HOMBRO_DER]];
+    const ancho = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    if (Number.isFinite(ancho) && ancho >= HOMBROS_PLAUSIBLES[0] * escala && ancho <= HOMBROS_PLAUSIBLES[1] * escala) {
+      medios.push([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]);
     }
   }
-  const escala = palmas.length ? mediana(palmas) / 0.4 : 1;
-  if (!munecas.length) return { centro: [0.5, 0.5], escala };
-  const yMin = Math.min(...munecas.map((p) => p[1]));
-  return { centro: [mediana(munecas.map((p) => p[0])), yMin + 1.5 * escala], escala };
+  return medios.length ? [mediana(medios.map((m) => m[0])), mediana(medios.map((m) => m[1]))] : null;
+}
+
+// Supuesto burdo, igual que en Python: los hombros quedan 1.5 anchos arriba de la muñeca más baja.
+function centroSinCuerpo(cuadros, escala) {
+  const munecas = cuadros.flatMap(({ manos }) => manos.filter(Boolean).map((m) => m[0]));
+  if (!munecas.length) return [0.5, 0.5];
+  return [mediana(munecas.map((p) => p[0])), Math.max(...munecas.map((p) => p[1])) - 1.5 * escala];
+}
+
+function marcoDelCuerpo(cuadros, centroRespaldo = null) {
+  const escala = escalaDePalmas(cuadros) ?? 1;
+  const centro = centroDeHombros(cuadros, escala) ?? centroRespaldo ?? centroSinCuerpo(cuadros, escala);
+  return { centro, escala };
+}
+
+/** Marco de cuadros crudos (sin corregir la proporción): para el video en vivo. */
+export function marcoEnVivo(cuadros, aspecto, centroRespaldo = null) {
+  return marcoDelCuerpo(corregirAspecto(cuadros, aspecto), centroRespaldo);
+}
+
+/** Reasigna las manos a los brazos por continuidad (paso 3 en secuencias.py). */
+export function seguirManos(cuadros, { centro, escala }) {
+  const ultima = [[centro[0] + 0.8 * escala, centro[1] + 1.6 * escala], [centro[0] - 0.8 * escala, centro[1] + 1.6 * escala]];
+  const dist = (m, p) => Math.hypot(m[0][0] - p[0], m[0][1] - p[1]);
+  return cuadros.map(({ cuerpo, manos }) => {
+    const vistas = manos.filter(Boolean);
+    let nuevas = [null, null];
+    if (vistas.length === 2) {
+      const directo = dist(vistas[0], ultima[0]) + dist(vistas[1], ultima[1]);
+      const cruzado = dist(vistas[1], ultima[0]) + dist(vistas[0], ultima[1]);
+      nuevas = directo <= cruzado ? [vistas[0], vistas[1]] : [vistas[1], vistas[0]];
+    } else if (vistas.length === 1) {
+      const brazo = dist(vistas[0], ultima[1]) < dist(vistas[0], ultima[0]) ? 1 : 0;
+      nuevas[brazo] = vistas[0];
+    }
+    nuevas.forEach((m, brazo) => { if (m) ultima[brazo] = [m[0][0], m[0][1]]; });
+    return { cuerpo, manos: nuevas };
+  });
 }
 
 function movimiento(cuadros, i) {
@@ -87,9 +115,11 @@ function rellenarHuecos(filas, presente) {
 }
 
 /** { x: F filas de D números, dominante }, sin remuestrear. */
-export function cuadrosAEntrada(cuadrosCrudos, aspecto, dominante = null) {
-  const cuadros = corregirAspecto(cuadrosCrudos, aspecto);
-  const { centro, escala } = marcoDelCuerpo(cuadros);
+export function cuadrosAEntrada(cuadrosCrudos, aspecto, dominante = null, centroRespaldo = null) {
+  const corregidos = corregirAspecto(cuadrosCrudos, aspecto);
+  const marco = marcoDelCuerpo(corregidos, centroRespaldo);
+  const { centro, escala } = marco;
+  const cuadros = seguirManos(corregidos, marco);
   const dom = dominante ?? manoQueMasSeMueve(cuadros);
   const espejo = dom === 0;
   const F = cuadros.length;
@@ -125,6 +155,6 @@ export function remuestrear(x, t = T) {
   });
 }
 
-export function secuencia(cuadros, aspecto, dominante = null, t = T) {
-  return remuestrear(cuadrosAEntrada(cuadros, aspecto, dominante).x, t);
+export function secuencia(cuadros, aspecto, dominante = null, t = T, centroRespaldo = null) {
+  return remuestrear(cuadrosAEntrada(cuadros, aspecto, dominante, centroRespaldo).x, t);
 }

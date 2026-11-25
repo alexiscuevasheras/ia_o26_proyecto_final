@@ -67,17 +67,26 @@ def a_cuadros_js(cuerpo, manos):
     return [{"cuerpo": lista(c), "manos": [lista(m[0]), lista(m[1])]} for c, m in zip(cuerpo, manos)]
 
 
+def caso_de_paridad(cuerpo, manos, aspecto, dominante, respaldo):
+    x = secuencia(cuerpo, manos, aspecto, dominante, T, None if respaldo is None else np.array(respaldo))
+    return {"cuadros": a_cuadros_js(cuerpo, manos), "aspecto": aspecto, "dominante": dominante,
+            "respaldo": respaldo, "x": x.round(8).tolist()}
+
+
 def generar_paridad(semilla=0):
     rng = np.random.default_rng(semilla)
     casos = []
     for F, aspecto, dominante in [(12, 4 / 3, None), (7, 16 / 9, 0), (20, 1.0, 1), (1, 4 / 3, None)]:
         cuerpo, manos = cuadros_de_prueba(rng, F)
-        casos.append({"cuadros": a_cuadros_js(cuerpo, manos), "aspecto": aspecto, "dominante": dominante,
-                      "x": secuencia(cuerpo, manos, aspecto, dominante).round(8).tolist()})
+        casos.append(caso_de_paridad(cuerpo, manos, aspecto, dominante, None))
     sin_cuerpo, manos = cuadros_de_prueba(rng, 9)
     sin_cuerpo[:] = np.nan
-    casos.append({"cuadros": a_cuadros_js(sin_cuerpo, manos), "aspecto": 1.0, "dominante": None,
-                  "x": secuencia(sin_cuerpo, manos, 1.0).round(8).tolist()})
+    casos.append(caso_de_paridad(sin_cuerpo, manos, 1.0, None, None))
+    casos.append(caso_de_paridad(sin_cuerpo, manos, 1.0, None, [0.45, 0.35]))  # con centro de respaldo
+    cuerpo, manos = cuadros_de_prueba(rng, 10)
+    cuerpo[:, 11, :2], cuerpo[:, 12, :2] = (0.62, 0.4), (0.38, 0.4)  # hombros plausibles
+    manos[:, 1, :, :2] *= 0.3  # palmas chicas: escala comparable a los hombros
+    casos.append(caso_de_paridad(cuerpo, manos, 4 / 3, None, None))
 
     red = gru_inicial(D, 8, 5, semilla=semilla)
     for v in red.p.values():

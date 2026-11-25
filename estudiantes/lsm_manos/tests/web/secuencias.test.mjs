@@ -11,14 +11,17 @@ import { adelanteGRU } from "../../web/gru.js";
 const TOL = 1e-5;
 const paridad = JSON.parse(readFileSync(new URL("../../web/fixtures/paridad_palabras.json", import.meta.url)));
 
+// Tolerancia relativa: los cuadros viajan redondeados a 8 decimales y la normalización
+// puede amplificar ese redondeo en valores grandes (las manos al azar de la prueba).
 function cerca(obtenido, esperado, que) {
   assert.equal(obtenido.length, esperado.length, `${que}: longitud`);
-  obtenido.forEach((v, i) => assert.ok(Math.abs(v - esperado[i]) < TOL, `${que}[${i}]: ${v} contra ${esperado[i]}`));
+  obtenido.forEach((v, i) => assert.ok(Math.abs(v - esperado[i]) < TOL * Math.max(1, Math.abs(esperado[i])),
+    `${que}[${i}]: ${v} contra ${esperado[i]}`));
 }
 
 test("secuencias: misma entrada que Python", () => {
   paridad.casos.forEach((caso, n) => {
-    const x = secuencia(caso.cuadros, caso.aspecto, caso.dominante);
+    const x = secuencia(caso.cuadros, caso.aspecto, caso.dominante, undefined, caso.respaldo);
     assert.equal(x.length, caso.x.length);
     x.forEach((fila, t) => cerca(fila, caso.x[t], `caso ${n}, t=${t}`));
   });
