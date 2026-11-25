@@ -27,7 +27,12 @@ function corregirAspecto(cuadros, aspecto) {
   }));
 }
 
-export function marcoDelCuerpo(cuadros) {
+/** Marco del cuerpo de cuadros crudos (sin corregir la proporción): para el video en vivo. */
+export function marcoEnVivo(cuadros, aspecto) {
+  return marcoDelCuerpo(corregirAspecto(cuadros, aspecto));
+}
+
+function marcoDelCuerpo(cuadros) {
   const validos = cuadros.filter((c) => c.cuerpo && Number.isFinite(c.cuerpo[HOMBRO_IZQ][0]) && Number.isFinite(c.cuerpo[HOMBRO_DER][0]));
   if (!validos.length) return marcoSinCuerpo(cuadros);
   const h = [HOMBRO_IZQ, HOMBRO_DER].map((i) => [0, 1].map((e) => mediana(validos.map((c) => c.cuerpo[i][e]))));
