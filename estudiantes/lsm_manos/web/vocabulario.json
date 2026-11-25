@@ -1,0 +1,1933 @@
+{
+ "glosas": {
+  "BUENOS-DIAS": {
+   "tema": "saludos",
+   "sinonimos": [
+    "buenos días",
+    "buen día"
+   ]
+  },
+  "BUENAS-TARDES": {
+   "tema": "saludos",
+   "sinonimos": [
+    "buenas tardes"
+   ]
+  },
+  "BUENAS-NOCHES": {
+   "tema": "saludos",
+   "sinonimos": [
+    "buenas noches"
+   ]
+  },
+  "GRACIAS": {
+   "tema": "saludos",
+   "sinonimos": [
+    "gracias",
+    "muchas gracias"
+   ]
+  },
+  "POR-FAVOR": {
+   "tema": "saludos",
+   "sinonimos": [
+    "por favor"
+   ]
+  },
+  "NOS-VEMOS": {
+   "tema": "saludos",
+   "sinonimos": [
+    "nos vemos",
+    "hasta luego"
+   ]
+  },
+  "ADIOS": {
+   "tema": "saludos",
+   "sinonimos": [
+    "adiós",
+    "bye"
+   ]
+  },
+  "DIA": {
+   "tema": "tiempo",
+   "sinonimos": [
+    "día",
+    "días"
+   ]
+  },
+  "HORA": {
+   "tema": "tiempo",
+   "sinonimos": [
+    "hora",
+    "horas"
+   ]
+  },
+  "SEMANA": {
+   "tema": "tiempo",
+   "sinonimos": [
+    "semana",
+    "semanas"
+   ]
+  },
+  "MINUTO": {
+   "tema": "tiempo",
+   "sinonimos": [
+    "minuto",
+    "minutos"
+   ]
+  },
+  "SEGUNDO": {
+   "tema": "tiempo",
+   "sinonimos": [
+    "segundo",
+    "segundos"
+   ]
+  },
+  "LUNES": {
+   "tema": "días",
+   "sinonimos": [
+    "lunes"
+   ]
+  },
+  "MARTES": {
+   "tema": "días",
+   "sinonimos": [
+    "martes"
+   ]
+  },
+  "MIERCOLES": {
+   "tema": "días",
+   "sinonimos": [
+    "miércoles"
+   ]
+  },
+  "JUEVES": {
+   "tema": "días",
+   "sinonimos": [
+    "jueves"
+   ]
+  },
+  "VIERNES": {
+   "tema": "días",
+   "sinonimos": [
+    "viernes"
+   ]
+  },
+  "SABADO": {
+   "tema": "días",
+   "sinonimos": [
+    "sábado"
+   ]
+  },
+  "DOMINGO": {
+   "tema": "días",
+   "sinonimos": [
+    "domingo"
+   ]
+  },
+  "ENERO": {
+   "tema": "meses",
+   "sinonimos": [
+    "enero"
+   ]
+  },
+  "FEBRERO": {
+   "tema": "meses",
+   "sinonimos": [
+    "febrero"
+   ]
+  },
+  "MARZO": {
+   "tema": "meses",
+   "sinonimos": [
+    "marzo"
+   ]
+  },
+  "ABRIL": {
+   "tema": "meses",
+   "sinonimos": [
+    "abril"
+   ]
+  },
+  "MAYO": {
+   "tema": "meses",
+   "sinonimos": [
+    "mayo"
+   ]
+  },
+  "JUNIO": {
+   "tema": "meses",
+   "sinonimos": [
+    "junio"
+   ]
+  },
+  "JULIO": {
+   "tema": "meses",
+   "sinonimos": [
+    "julio"
+   ]
+  },
+  "AGOSTO": {
+   "tema": "meses",
+   "sinonimos": [
+    "agosto"
+   ]
+  },
+  "SEPTIEMBRE": {
+   "tema": "meses",
+   "sinonimos": [
+    "septiembre",
+    "setiembre"
+   ]
+  },
+  "OCTUBRE": {
+   "tema": "meses",
+   "sinonimos": [
+    "octubre"
+   ]
+  },
+  "NOVIEMBRE": {
+   "tema": "meses",
+   "sinonimos": [
+    "noviembre"
+   ]
+  },
+  "DICIEMBRE": {
+   "tema": "meses",
+   "sinonimos": [
+    "diciembre"
+   ]
+  },
+  "AÑO": {
+   "tema": "tiempo",
+   "sinonimos": [
+    "año",
+    "años"
+   ]
+  },
+  "CALIFICACION": {
+   "tema": "escuela",
+   "sinonimos": [
+    "calificación",
+    "calificaciones",
+    "nota"
+   ]
+  },
+  "CLASE": {
+   "tema": "escuela",
+   "sinonimos": [
+    "clase",
+    "lección",
+    "clases"
+   ]
+  },
+  "CUADERNO": {
+   "tema": "escuela",
+   "sinonimos": [
+    "cuaderno",
+    "libreta"
+   ]
+  },
+  "ESCUELA": {
+   "tema": "escuela",
+   "sinonimos": [
+    "escuela",
+    "colegio"
+   ]
+  },
+  "LAPIZ": {
+   "tema": "escuela",
+   "sinonimos": [
+    "lápiz",
+    "lápices"
+   ]
+  },
+  "LEER": {
+   "tema": "escuela",
+   "sinonimos": [
+    "leer",
+    "lectura",
+    "leo",
+    "lee"
+   ]
+  },
+  "LENGUA-DE-SEÑAS": {
+   "tema": "escuela",
+   "sinonimos": [
+    "lengua de señas",
+    "lenguaje de señas",
+    "señas"
+   ]
+  },
+  "EXAMEN": {
+   "tema": "escuela",
+   "sinonimos": [
+    "examen",
+    "exámenes"
+   ]
+  },
+  "ESCRIBIR": {
+   "tema": "escuela",
+   "sinonimos": [
+    "escribir",
+    "escritura",
+    "escribo",
+    "escribe"
+   ]
+  },
+  "GOMA": {
+   "tema": "escuela",
+   "sinonimos": [
+    "goma",
+    "borrador"
+   ]
+  },
+  "SACAPUNTAS": {
+   "tema": "escuela",
+   "sinonimos": [
+    "sacapuntas"
+   ]
+  },
+  "REGLA": {
+   "tema": "escuela",
+   "sinonimos": [
+    "regla"
+   ]
+  },
+  "COLORES": {
+   "tema": "escuela",
+   "sinonimos": [
+    "colores",
+    "color"
+   ]
+  },
+  "ABUELA": {
+   "tema": "familia",
+   "sinonimos": [
+    "abuela",
+    "abuelita"
+   ]
+  },
+  "ABUELO": {
+   "tema": "familia",
+   "sinonimos": [
+    "abuelo",
+    "abuelito"
+   ]
+  },
+  "ESPOSA": {
+   "tema": "familia",
+   "sinonimos": [
+    "esposa"
+   ]
+  },
+  "ESPOSO": {
+   "tema": "familia",
+   "sinonimos": [
+    "esposo",
+    "marido"
+   ]
+  },
+  "FAMILIA": {
+   "tema": "familia",
+   "sinonimos": [
+    "familia"
+   ]
+  },
+  "HERMANA": {
+   "tema": "familia",
+   "sinonimos": [
+    "hermana"
+   ]
+  },
+  "HERMANO": {
+   "tema": "familia",
+   "sinonimos": [
+    "hermano"
+   ]
+  },
+  "HIJO": {
+   "tema": "familia",
+   "sinonimos": [
+    "hijo"
+   ]
+  },
+  "HIJA": {
+   "tema": "familia",
+   "sinonimos": [
+    "hija"
+   ]
+  },
+  "HOMBRE": {
+   "tema": "familia",
+   "sinonimos": [
+    "hombre",
+    "señor"
+   ]
+  },
+  "MUJER": {
+   "tema": "familia",
+   "sinonimos": [
+    "mujer",
+    "señora",
+    "mujeres"
+   ]
+  },
+  "PAPA": {
+   "tema": "familia",
+   "sinonimos": [
+    "papá",
+    "padre"
+   ]
+  },
+  "MAMA": {
+   "tema": "familia",
+   "sinonimos": [
+    "mamá",
+    "madre"
+   ]
+  },
+  "NOVIA": {
+   "tema": "familia",
+   "sinonimos": [
+    "novia"
+   ]
+  },
+  "NOVIO": {
+   "tema": "familia",
+   "sinonimos": [
+    "novio"
+   ]
+  },
+  "PRIMA": {
+   "tema": "familia",
+   "sinonimos": [
+    "prima"
+   ]
+  },
+  "PRIMO": {
+   "tema": "familia",
+   "sinonimos": [
+    "primo"
+   ]
+  },
+  "SOBRINA": {
+   "tema": "familia",
+   "sinonimos": [
+    "sobrina"
+   ]
+  },
+  "SOBRINO": {
+   "tema": "familia",
+   "sinonimos": [
+    "sobrino"
+   ]
+  },
+  "TIA": {
+   "tema": "familia",
+   "sinonimos": [
+    "tía"
+   ]
+  },
+  "TIO": {
+   "tema": "familia",
+   "sinonimos": [
+    "tío"
+   ]
+  },
+  "CUARTO": {
+   "tema": "casa",
+   "sinonimos": [
+    "cuarto",
+    "recámara",
+    "habitación"
+   ]
+  },
+  "BAÑO": {
+   "tema": "casa",
+   "sinonimos": [
+    "baño"
+   ]
+  },
+  "COCINA": {
+   "tema": "casa",
+   "sinonimos": [
+    "cocina"
+   ]
+  },
+  "CAMA": {
+   "tema": "casa",
+   "sinonimos": [
+    "cama"
+   ]
+  },
+  "CASA": {
+   "tema": "casa",
+   "sinonimos": [
+    "casa",
+    "hogar"
+   ]
+  },
+  "ROPERO": {
+   "tema": "casa",
+   "sinonimos": [
+    "ropero",
+    "clóset",
+    "armario"
+   ]
+  },
+  "CORTINA": {
+   "tema": "casa",
+   "sinonimos": [
+    "cortina",
+    "cortinas"
+   ]
+  },
+  "CUNA": {
+   "tema": "casa",
+   "sinonimos": [
+    "cuna"
+   ]
+  },
+  "TECHO": {
+   "tema": "casa",
+   "sinonimos": [
+    "techo"
+   ]
+  },
+  "PISO": {
+   "tema": "casa",
+   "sinonimos": [
+    "piso",
+    "suelo"
+   ]
+  },
+  "ESCALERAS": {
+   "tema": "casa",
+   "sinonimos": [
+    "escaleras",
+    "escalera"
+   ]
+  },
+  "ESCOBA": {
+   "tema": "casa",
+   "sinonimos": [
+    "escoba"
+   ]
+  },
+  "LAMPARA": {
+   "tema": "casa",
+   "sinonimos": [
+    "lámpara"
+   ]
+  },
+  "MESA": {
+   "tema": "casa",
+   "sinonimos": [
+    "mesa"
+   ]
+  },
+  "PARED": {
+   "tema": "casa",
+   "sinonimos": [
+    "pared"
+   ]
+  },
+  "PASILLO": {
+   "tema": "casa",
+   "sinonimos": [
+    "pasillo"
+   ]
+  },
+  "VIDRIO": {
+   "tema": "casa",
+   "sinonimos": [
+    "vidrio"
+   ]
+  },
+  "VENTANA": {
+   "tema": "casa",
+   "sinonimos": [
+    "ventana"
+   ]
+  },
+  "PUERTA": {
+   "tema": "casa",
+   "sinonimos": [
+    "puerta"
+   ]
+  },
+  "ADULTO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "adulto",
+    "adulta"
+   ]
+  },
+  "JOVEN": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "joven",
+    "jóvenes"
+   ]
+  },
+  "NIÑO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "niño",
+    "niña",
+    "niños"
+   ]
+  },
+  "BEBE": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "bebé"
+   ]
+  },
+  "FEO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "feo",
+    "fea"
+   ]
+  },
+  "BONITO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "bonito",
+    "bonita",
+    "lindo",
+    "linda"
+   ]
+  },
+  "MALA-PERSONA": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "mala persona",
+    "malo",
+    "mala"
+   ]
+  },
+  "SORDO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "sordo",
+    "sorda",
+    "sordos"
+   ]
+  },
+  "MUDO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "mudo",
+    "muda"
+   ]
+  },
+  "FUERTE": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "fuerte"
+   ]
+  },
+  "GORDO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "gordo",
+    "gorda"
+   ]
+  },
+  "ALTO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "alto",
+    "alta"
+   ]
+  },
+  "BAJO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "bajo",
+    "baja",
+    "chaparro"
+   ]
+  },
+  "BUENA-PERSONA": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "buena persona",
+    "bueno",
+    "buena"
+   ]
+  },
+  "CIEGO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "ciego",
+    "ciega"
+   ]
+  },
+  "DEBIL": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "débil"
+   ]
+  },
+  "DELGADO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "delgado",
+    "delgada",
+    "flaco",
+    "flaca"
+   ]
+  },
+  "CUCHARA": {
+   "tema": "comida",
+   "sinonimos": [
+    "cuchara"
+   ]
+  },
+  "CUCHILLO": {
+   "tema": "comida",
+   "sinonimos": [
+    "cuchillo"
+   ]
+  },
+  "PLATO": {
+   "tema": "comida",
+   "sinonimos": [
+    "plato"
+   ]
+  },
+  "VASO": {
+   "tema": "comida",
+   "sinonimos": [
+    "vaso"
+   ]
+  },
+  "COMIDA": {
+   "tema": "comida",
+   "sinonimos": [
+    "comida"
+   ]
+  },
+  "CENA": {
+   "tema": "comida",
+   "sinonimos": [
+    "cena",
+    "cenar"
+   ]
+  },
+  "DESAYUNO": {
+   "tema": "comida",
+   "sinonimos": [
+    "desayuno",
+    "desayunar"
+   ]
+  },
+  "TENEDOR": {
+   "tema": "comida",
+   "sinonimos": [
+    "tenedor"
+   ]
+  },
+  "SERVILLETA": {
+   "tema": "comida",
+   "sinonimos": [
+    "servilleta"
+   ]
+  },
+  "SAL": {
+   "tema": "comida",
+   "sinonimos": [
+    "sal"
+   ]
+  },
+  "QUIERO-MAS": {
+   "tema": "comida",
+   "sinonimos": [
+    "quiero más"
+   ]
+  },
+  "NO-ME-GUSTO": {
+   "tema": "comida",
+   "sinonimos": [
+    "no me gustó",
+    "no me gusta"
+   ]
+  },
+  "ARETE": {
+   "tema": "ropa",
+   "sinonimos": [
+    "arete",
+    "aretes"
+   ]
+  },
+  "BLUSA": {
+   "tema": "ropa",
+   "sinonimos": [
+    "blusa"
+   ]
+  },
+  "BOTA": {
+   "tema": "ropa",
+   "sinonimos": [
+    "bota",
+    "botas"
+   ]
+  },
+  "CAMISA": {
+   "tema": "ropa",
+   "sinonimos": [
+    "camisa",
+    "playera"
+   ]
+  },
+  "COLLAR": {
+   "tema": "ropa",
+   "sinonimos": [
+    "collar"
+   ]
+  },
+  "GUANTE": {
+   "tema": "ropa",
+   "sinonimos": [
+    "guante",
+    "guantes"
+   ]
+  },
+  "PANTALON": {
+   "tema": "ropa",
+   "sinonimos": [
+    "pantalón",
+    "pantalones"
+   ]
+  },
+  "PIJAMA": {
+   "tema": "ropa",
+   "sinonimos": [
+    "pijama",
+    "piyama"
+   ]
+  },
+  "SHORT": {
+   "tema": "ropa",
+   "sinonimos": [
+    "short",
+    "shorts"
+   ]
+  },
+  "TRAJE": {
+   "tema": "ropa",
+   "sinonimos": [
+    "traje"
+   ]
+  },
+  "VESTIDO": {
+   "tema": "ropa",
+   "sinonimos": [
+    "vestido"
+   ]
+  },
+  "ZAPATOS": {
+   "tema": "ropa",
+   "sinonimos": [
+    "zapatos",
+    "zapato"
+   ]
+  },
+  "FALDA": {
+   "tema": "ropa",
+   "sinonimos": [
+    "falda"
+   ]
+  },
+  "ROPA-INTERIOR": {
+   "tema": "ropa",
+   "sinonimos": [
+    "ropa interior",
+    "calzones"
+   ]
+  },
+  "BARBA": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "barba"
+   ]
+  },
+  "BIGOTE": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "bigote"
+   ]
+  },
+  "BRAZO": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "brazo",
+    "brazos"
+   ]
+  },
+  "BOCA": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "boca"
+   ]
+  },
+  "CABELLO": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "cabello",
+    "pelo"
+   ]
+  },
+  "CABEZA": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "cabeza"
+   ]
+  },
+  "CARA": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "cara",
+    "rostro"
+   ]
+  },
+  "PIES": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "pies",
+    "pie"
+   ]
+  },
+  "DIENTES": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "dientes",
+    "diente"
+   ]
+  },
+  "OJOS": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "ojos",
+    "ojo"
+   ]
+  },
+  "OREJAS": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "orejas",
+    "oreja"
+   ]
+  },
+  "NARIZ": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "nariz"
+   ]
+  },
+  "OIDO": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "oído",
+    "oír"
+   ]
+  },
+  "MEJILLA": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "mejilla",
+    "cachete"
+   ]
+  },
+  "UÑA": {
+   "tema": "cuerpo",
+   "sinonimos": [
+    "uña",
+    "uñas"
+   ]
+  },
+  "AVION": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "avión",
+    "aviones"
+   ]
+  },
+  "BARCO": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "barco"
+   ]
+  },
+  "BICICLETA": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "bicicleta",
+    "bici"
+   ]
+  },
+  "CAMION-DE-CARGA": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "camión de carga",
+    "tráiler"
+   ]
+  },
+  "HELICOPTERO": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "helicóptero"
+   ]
+  },
+  "COCHE": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "coche",
+    "carro",
+    "auto"
+   ]
+  },
+  "MOTO": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "moto",
+    "motocicleta"
+   ]
+  },
+  "TAXI": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "taxi"
+   ]
+  },
+  "TRACTOR": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "tractor"
+   ]
+  },
+  "TREN": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "tren"
+   ]
+  },
+  "METRO": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "metro"
+   ]
+  },
+  "AUTOBUS": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "autobús",
+    "camión"
+   ]
+  },
+  "CAMIONETA": {
+   "tema": "vehículos",
+   "sinonimos": [
+    "camioneta"
+   ]
+  },
+  "AEROPUERTO": {
+   "tema": "lugares",
+   "sinonimos": [
+    "aeropuerto"
+   ]
+  },
+  "BIBLIOTECA": {
+   "tema": "lugares",
+   "sinonimos": [
+    "biblioteca"
+   ]
+  },
+  "CENTRO": {
+   "tema": "lugares",
+   "sinonimos": [
+    "centro"
+   ]
+  },
+  "CINE": {
+   "tema": "lugares",
+   "sinonimos": [
+    "cine"
+   ]
+  },
+  "CIRCO": {
+   "tema": "lugares",
+   "sinonimos": [
+    "circo"
+   ]
+  },
+  "EDIFICIO": {
+   "tema": "lugares",
+   "sinonimos": [
+    "edificio"
+   ]
+  },
+  "HOSPITAL": {
+   "tema": "lugares",
+   "sinonimos": [
+    "hospital"
+   ]
+  },
+  "HOTEL": {
+   "tema": "lugares",
+   "sinonimos": [
+    "hotel"
+   ]
+  },
+  "MERCADO": {
+   "tema": "lugares",
+   "sinonimos": [
+    "mercado"
+   ]
+  },
+  "MUSEO": {
+   "tema": "lugares",
+   "sinonimos": [
+    "museo"
+   ]
+  },
+  "RESTAURANTE": {
+   "tema": "lugares",
+   "sinonimos": [
+    "restaurante"
+   ]
+  },
+  "SUPERMERCADO": {
+   "tema": "lugares",
+   "sinonimos": [
+    "supermercado",
+    "súper"
+   ]
+  },
+  "CAFETERIA": {
+   "tema": "lugares",
+   "sinonimos": [
+    "cafetería"
+   ]
+  },
+  "YO": {
+   "tema": "pronombres",
+   "sinonimos": [
+    "yo",
+    "mí"
+   ]
+  },
+  "TU": {
+   "tema": "pronombres",
+   "sinonimos": [
+    "tú",
+    "ti",
+    "usted"
+   ]
+  },
+  "EL": {
+   "tema": "pronombres",
+   "sinonimos": [
+    "él"
+   ]
+  },
+  "ELLA": {
+   "tema": "pronombres",
+   "sinonimos": [
+    "ella"
+   ]
+  },
+  "ELLOS": {
+   "tema": "pronombres",
+   "sinonimos": [
+    "ellos"
+   ]
+  },
+  "ELLAS": {
+   "tema": "pronombres",
+   "sinonimos": [
+    "ellas"
+   ]
+  },
+  "NOSOTROS": {
+   "tema": "pronombres",
+   "sinonimos": [
+    "nosotros"
+   ]
+  },
+  "NOSOTRAS": {
+   "tema": "pronombres",
+   "sinonimos": [
+    "nosotras"
+   ]
+  },
+  "USTEDES": {
+   "tema": "pronombres",
+   "sinonimos": [
+    "ustedes"
+   ]
+  },
+  "NADIE": {
+   "tema": "pronombres",
+   "sinonimos": [
+    "nadie",
+    "ninguno",
+    "ninguna"
+   ]
+  },
+  "ALGUIEN": {
+   "tema": "pronombres",
+   "sinonimos": [
+    "alguien"
+   ]
+  },
+  "ABRAZAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "abrazar",
+    "abrazo",
+    "abraza"
+   ]
+  },
+  "AMAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "amar",
+    "amor",
+    "amo",
+    "te amo",
+    "quiero"
+   ]
+  },
+  "ARREGLAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "arreglar",
+    "arreglo",
+    "arregla"
+   ]
+  },
+  "ASUSTAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "asustar",
+    "susto",
+    "asustado"
+   ]
+  },
+  "AYUDAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "ayudar",
+    "ayuda",
+    "ayúdame",
+    "ayudo"
+   ]
+  },
+  "BUSCAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "buscar",
+    "busco",
+    "busca"
+   ]
+  },
+  "CALLAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "callar",
+    "cállate",
+    "silencio"
+   ]
+  },
+  "CERRAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "cerrar",
+    "cierra",
+    "cierro"
+   ]
+  },
+  "CREER": {
+   "tema": "verbos",
+   "sinonimos": [
+    "creer",
+    "creo",
+    "cree"
+   ]
+  },
+  "COMER": {
+   "tema": "verbos",
+   "sinonimos": [
+    "comer",
+    "como",
+    "come",
+    "comes",
+    "comemos"
+   ]
+  },
+  "PARAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "parar",
+    "detener",
+    "detente"
+   ]
+  },
+  "DORMIR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "dormir",
+    "duermo",
+    "duerme",
+    "sueño"
+   ]
+  },
+  "CACHETADA": {
+   "tema": "verbos",
+   "sinonimos": [
+    "cachetada",
+    "bofetada"
+   ]
+  },
+  "GUARDAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "guardar",
+    "guardo",
+    "guarda"
+   ]
+  },
+  "JUGAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "jugar",
+    "juego",
+    "juega"
+   ]
+  },
+  "RECOGER": {
+   "tema": "verbos",
+   "sinonimos": [
+    "recoger",
+    "recojo",
+    "recoge"
+   ]
+  },
+  "LLORAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "llorar",
+    "lloro",
+    "llora"
+   ]
+  },
+  "MENTIR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "mentir",
+    "mentira",
+    "miento",
+    "miente"
+   ]
+  },
+  "ESCUCHAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "escuchar",
+    "escucho",
+    "escucha",
+    "oigo"
+   ]
+  },
+  "OLVIDAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "olvidar",
+    "olvido",
+    "olvida",
+    "olvidé"
+   ]
+  },
+  "HACER": {
+   "tema": "verbos",
+   "sinonimos": [
+    "hacer",
+    "hago",
+    "hace"
+   ]
+  },
+  "REIR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "reír",
+    "risa",
+    "río",
+    "ríe"
+   ]
+  },
+  "AVENTAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "aventar",
+    "lanzar",
+    "tirar"
+   ]
+  },
+  "ORDENAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "ordenar",
+    "ordeno",
+    "ordena"
+   ]
+  },
+  "LIMPIAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "limpiar",
+    "limpio",
+    "limpia"
+   ]
+  },
+  "ACTOR": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "actor",
+    "actriz"
+   ]
+  },
+  "BOMBERO": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "bombero",
+    "bombera"
+   ]
+  },
+  "DOCTOR": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "doctor",
+    "doctora",
+    "médico",
+    "médica"
+   ]
+  },
+  "MAESTRO": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "maestro",
+    "maestra",
+    "profesor",
+    "profesora",
+    "profe"
+   ]
+  },
+  "MESERO": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "mesero",
+    "mesera"
+   ]
+  },
+  "POLICIA": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "policía"
+   ]
+  },
+  "PRESIDENTE": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "presidente",
+    "presidenta"
+   ]
+  },
+  "SECRETARIA": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "secretaria",
+    "secretario"
+   ]
+  },
+  "CARPINTERO": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "carpintero"
+   ]
+  },
+  "MECANICO": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "mecánico"
+   ]
+  },
+  "ZAPATERO": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "zapatero"
+   ]
+  },
+  "ESTILISTA": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "estilista"
+   ]
+  },
+  "COSTURERA": {
+   "tema": "profesiones",
+   "sinonimos": [
+    "costurera",
+    "costurero",
+    "coser"
+   ]
+  },
+  "AGUASCALIENTES": {
+   "tema": "estados",
+   "sinonimos": [
+    "aguascalientes"
+   ]
+  },
+  "BAJA-CALIFORNIA": {
+   "tema": "estados",
+   "sinonimos": [
+    "baja california"
+   ]
+  },
+  "BAJA-CALIFORNIA-SUR": {
+   "tema": "estados",
+   "sinonimos": [
+    "baja california sur"
+   ]
+  },
+  "CAMPECHE": {
+   "tema": "estados",
+   "sinonimos": [
+    "campeche"
+   ]
+  },
+  "COAHUILA": {
+   "tema": "estados",
+   "sinonimos": [
+    "coahuila"
+   ]
+  },
+  "COLIMA": {
+   "tema": "estados",
+   "sinonimos": [
+    "colima"
+   ]
+  },
+  "CHIAPAS": {
+   "tema": "estados",
+   "sinonimos": [
+    "chiapas"
+   ]
+  },
+  "CHIHUAHUA": {
+   "tema": "estados",
+   "sinonimos": [
+    "chihuahua"
+   ]
+  },
+  "SINALOA": {
+   "tema": "estados",
+   "sinonimos": [
+    "sinaloa"
+   ]
+  },
+  "DURANGO": {
+   "tema": "estados",
+   "sinonimos": [
+    "durango"
+   ]
+  },
+  "GUANAJUATO": {
+   "tema": "estados",
+   "sinonimos": [
+    "guanajuato"
+   ]
+  },
+  "GUERRERO": {
+   "tema": "estados",
+   "sinonimos": [
+    "guerrero"
+   ]
+  },
+  "HIDALGO": {
+   "tema": "estados",
+   "sinonimos": [
+    "hidalgo"
+   ]
+  },
+  "JALISCO": {
+   "tema": "estados",
+   "sinonimos": [
+    "jalisco"
+   ]
+  },
+  "MEXICO": {
+   "tema": "estados",
+   "sinonimos": [
+    "méxico"
+   ]
+  },
+  "MICHOACAN": {
+   "tema": "estados",
+   "sinonimos": [
+    "michoacán"
+   ]
+  },
+  "MORELOS": {
+   "tema": "estados",
+   "sinonimos": [
+    "morelos"
+   ]
+  },
+  "NAYARIT": {
+   "tema": "estados",
+   "sinonimos": [
+    "nayarit"
+   ]
+  },
+  "NUEVO-LEON": {
+   "tema": "estados",
+   "sinonimos": [
+    "nuevo león"
+   ]
+  },
+  "OAXACA": {
+   "tema": "estados",
+   "sinonimos": [
+    "oaxaca"
+   ]
+  },
+  "PUEBLA": {
+   "tema": "estados",
+   "sinonimos": [
+    "puebla"
+   ]
+  },
+  "QUERETARO": {
+   "tema": "estados",
+   "sinonimos": [
+    "querétaro"
+   ]
+  },
+  "QUINTANA-ROO": {
+   "tema": "estados",
+   "sinonimos": [
+    "quintana roo"
+   ]
+  },
+  "SAN-LUIS-POTOSI": {
+   "tema": "estados",
+   "sinonimos": [
+    "san luis potosí"
+   ]
+  },
+  "SONORA": {
+   "tema": "estados",
+   "sinonimos": [
+    "sonora"
+   ]
+  },
+  "TABASCO": {
+   "tema": "estados",
+   "sinonimos": [
+    "tabasco"
+   ]
+  },
+  "TAMAULIPAS": {
+   "tema": "estados",
+   "sinonimos": [
+    "tamaulipas"
+   ]
+  },
+  "TLAXCALA": {
+   "tema": "estados",
+   "sinonimos": [
+    "tlaxcala"
+   ]
+  },
+  "VERACRUZ": {
+   "tema": "estados",
+   "sinonimos": [
+    "veracruz"
+   ]
+  },
+  "YUCATAN": {
+   "tema": "estados",
+   "sinonimos": [
+    "yucatán"
+   ]
+  },
+  "ZACATECAS": {
+   "tema": "estados",
+   "sinonimos": [
+    "zacatecas"
+   ]
+  },
+  "ABRIR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "abrir",
+    "abro",
+    "abre"
+   ]
+  },
+  "AGUA": {
+   "tema": "comida",
+   "sinonimos": [
+    "agua"
+   ]
+  },
+  "ANARANJADO": {
+   "tema": "colores",
+   "sinonimos": [
+    "anaranjado",
+    "naranja"
+   ]
+  },
+  "APARTAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "apartar",
+    "aparta",
+    "aparto"
+   ]
+  },
+  "APRENDER": {
+   "tema": "verbos",
+   "sinonimos": [
+    "aprender",
+    "aprendo",
+    "aprende"
+   ]
+  },
+  "AQUI": {
+   "tema": "lugares",
+   "sinonimos": [
+    "aquí",
+    "acá"
+   ]
+  },
+  "AYER": {
+   "tema": "tiempo",
+   "sinonimos": [
+    "ayer"
+   ]
+  },
+  "AZUL": {
+   "tema": "colores",
+   "sinonimos": [
+    "azul"
+   ]
+  },
+  "BAILAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "bailar",
+    "baile",
+    "bailo",
+    "baila"
+   ]
+  },
+  "BANDERA": {
+   "tema": "objetos",
+   "sinonimos": [
+    "bandera"
+   ]
+  },
+  "BESAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "besar",
+    "beso",
+    "besa"
+   ]
+  },
+  "BIEN": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "bien"
+   ]
+  },
+  "BLANCO": {
+   "tema": "colores",
+   "sinonimos": [
+    "blanco",
+    "blanca"
+   ]
+  },
+  "BORRAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "borrar",
+    "borro",
+    "borra"
+   ]
+  },
+  "BUENOS": {
+   "tema": "saludos",
+   "sinonimos": [
+    "buenos"
+   ]
+  },
+  "CAFE": {
+   "tema": "comida",
+   "sinonimos": [
+    "café"
+   ]
+  },
+  "CALOR": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "calor"
+   ]
+  },
+  "CANSADO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "cansado",
+    "cansada"
+   ]
+  },
+  "CHISTOSO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "chistoso",
+    "chistosa",
+    "gracioso"
+   ]
+  },
+  "CLARO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "claro"
+   ]
+  },
+  "COCINAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "cocinar",
+    "cocino"
+   ]
+  },
+  "COMO-PREGUNTA": {
+   "tema": "preguntas",
+   "sinonimos": [
+    "cómo"
+   ]
+  },
+  "CONSTRUIR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "construir",
+    "construyo",
+    "construye"
+   ]
+  },
+  "CONTAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "contar",
+    "cuento",
+    "cuenta"
+   ]
+  },
+  "COQUETO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "coqueto",
+    "coqueta"
+   ]
+  },
+  "CORRER": {
+   "tema": "verbos",
+   "sinonimos": [
+    "correr",
+    "corro",
+    "corre"
+   ]
+  },
+  "DAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "dar",
+    "doy",
+    "da",
+    "dame"
+   ]
+  },
+  "DEPORTE": {
+   "tema": "objetos",
+   "sinonimos": [
+    "deporte",
+    "deportes"
+   ]
+  },
+  "DERECHA": {
+   "tema": "lugares",
+   "sinonimos": [
+    "derecha"
+   ]
+  },
+  "DURO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "duro",
+    "dura"
+   ]
+  },
+  "EGOISTA": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "egoísta"
+   ]
+  },
+  "ENANO": {
+   "tema": "adjetivos",
+   "sinonimos": [
+    "enano",
+    "enana"
+   ]
+  },
+  "ENCENDER": {
+   "tema": "verbos",
+   "sinonimos": [
+    "encender",
+    "prender",
+    "enciende",
+    "prende"
+   ]
+  },
+  "ENTRAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "entrar",
+    "entro",
+    "entra"
+   ]
+  },
+  "ESTAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "estar",
+    "estoy",
+    "está",
+    "estás"
+   ]
+  },
+  "EXPLICAR": {
+   "tema": "verbos",
+   "sinonimos": [
+    "explicar",
+    "explico",
+    "explica"
+   ]
+  }
+ }
+}

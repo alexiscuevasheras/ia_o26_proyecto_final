@@ -168,8 +168,8 @@ uaemex,166,Museum,MUSEO,museo,lugares
 uaemex,167,Restaurant,RESTAURANTE,restaurante,lugares
 uaemex,168,Supermarket,SUPERMERCADO,supermercado|súper,lugares
 uaemex,169,Café,CAFETERIA,cafetería,lugares
-uaemex,170,I,YO,yo|me|mi|mí,pronombres
-uaemex,171,You,TU,tú|te|ti|usted,pronombres
+uaemex,170,I,YO,yo|mí,pronombres
+uaemex,171,You,TU,tú|ti|usted,pronombres
 uaemex,172,He,EL,él,pronombres
 uaemex,173,She,ELLA,ella,pronombres
 uaemex,174,They(male),ELLOS,ellos,pronombres
@@ -189,7 +189,7 @@ uaemex,187,To silence,CALLAR,callar|cállate|silencio,verbos
 uaemex,188,Close,CERRAR,cerrar|cierra|cierro,verbos
 uaemex,189,Believe,CREER,creer|creo|cree,verbos
 uaemex,190,Eat,COMER,comer|como|come|comes|comemos,verbos
-uaemex,191,Stop,PARAR,parar|alto|detener|para,verbos
+uaemex,191,Stop,PARAR,parar|detener|detente,verbos
 uaemex,192,Sleep,DORMIR,dormir|duermo|duerme|sueño,verbos
 uaemex,193,Slap,CACHETADA,cachetada|bofetada,verbos
 uaemex,194,Keep,GUARDAR,guardar|guardo|guarda,verbos
@@ -272,7 +272,7 @@ iteso,CALOR,Calor,CALOR,calor,adjetivos
 iteso,CANSADO,Cansado,CANSADO,cansado|cansada,adjetivos
 iteso,CHISTOSO,Chistoso,CHISTOSO,chistoso|chistosa|gracioso,adjetivos
 iteso,CLARO,Claro,CLARO,claro,adjetivos
-iteso,COCINAR,Cocinar,COCINAR,cocinar|cocino|cocina,verbos
+iteso,COCINAR,Cocinar,COCINAR,cocinar|cocino,verbos
 iteso,COLOR,Color,COLORES,color|colores,colores
 iteso,COMER,Comer,COMER,comer|como|come|comes|comemos,verbos
 iteso,COMO,Como,COMO-PREGUNTA,cómo,preguntas
