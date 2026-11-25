@@ -15,43 +15,11 @@ Uso:
 
 import argparse
 import json
-import time
-from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
-import numpy as np
-
-from ...evaluar import matriz_confusion
-from ...experimentos.comun import entorno, resumir
-from ..conjunto import cargar, personas_de_prueba
+from ...experimentos.comun import entorno
 from ..modelos import MODELOS
-
-
-def top_k(P, y, k):
-    return float(np.mean([y[i] in np.argsort(-P[i])[:k] for i in range(len(y))]))
-
-
-def evaluar(P, y, K):
-    """El F1 macro se promedia solo sobre las glosas que la persona tiene: las
-    que solo están en ITESO valdrían 0 y lo bajarían sin decir nada."""
-    C = matriz_confusion(y, P.argmax(axis=1), K)
-    verdaderos = np.diag(C).astype(float)
-    denominador = C.sum(axis=0) + C.sum(axis=1)
-    f1 = np.divide(2 * verdaderos, denominador, out=np.zeros_like(verdaderos), where=denominador > 0)
-    return {"top1": float(np.mean(P.argmax(axis=1) == y)), "top5": top_k(P, y, 5),
-            "f1_macro": float(f1[np.unique(y)].mean())}
-
-
-def resumen_con_peor(valores):
-    return {**resumir(valores), "peor": float(np.min(valores))}
-
-
-def un_pliegue(args):
-    nombre, X, y, persona, es_val, K = args
-    inicio = time.time()
-    modelo = MODELOS[nombre]().ajustar(X[~es_val], y[~es_val], K)
-    resultado = evaluar(modelo.probabilidades(X[es_val]), y[es_val], K)
-    return {**resultado, "segundos": round(time.time() - inicio, 1)}
+from .comun import dejando_una_persona_fuera, linea, personas_de_validacion, preparar, resumir_metricas
 
 
 def main():
@@ -63,33 +31,21 @@ def main():
     ap.add_argument("--procesos", type=int, default=6)
     args = ap.parse_args()
 
-    datos = cargar([args.uaemex] + ([args.iteso] if args.iteso else []))
-    prueba = personas_de_prueba(datos.persona)
-    datos = datos.filtrar(~np.isin(datos.persona, list(prueba)))
-    glosas = sorted(set(datos.glosa))
-    indice = {g: k for k, g in enumerate(glosas)}
-    y = np.array([indice[g] for g in datos.glosa])
+    datos, y, glosas, prueba = preparar([args.uaemex] + ([args.iteso] if args.iteso else []))
     K = len(glosas)
-    validacion = sorted({p for p in datos.persona if p.startswith("uaemex-")})
-    print(f"{len(datos)} secuencias, {K} glosas, validación: {validacion}, prueba (sin tocar): {sorted(prueba)}", flush=True)
+    print(f"{len(datos)} secuencias, {K} glosas, prueba sin tocar: {prueba}", flush=True)
 
     resultados = {}
     for nombre in args.modelos:
-        tareas = [(nombre, datos.X, y, datos.persona, (datos.persona == p) & (datos.dataset == "uaemex"), K)
-                  for p in validacion]
-        with ProcessPoolExecutor(args.procesos) as ejecutor:
-            por_persona = dict(zip(validacion, ejecutor.map(un_pliegue, tareas)))
-        resumen = {m: resumen_con_peor([r[m] for r in por_persona.values()]) for m in ("top1", "top5", "f1_macro")}
-        resultados[nombre] = {"resumen": resumen, "por_persona": por_persona}
-        print(f"{nombre}: top1 {resumen['top1']['media']:.3f} ± {resumen['top1']['desviacion']:.3f} "
-              f"(peor {resumen['top1']['peor']:.3f}), top5 {resumen['top5']['media']:.3f}, "
-              f"F1 {resumen['f1_macro']['media']:.3f}", flush=True)
+        por_persona, _ = dejando_una_persona_fuera(MODELOS[nombre], datos, datos.X, y, K, args.procesos)
+        resultados[nombre] = {"resumen": resumir_metricas(por_persona), "por_persona": por_persona}
+        print(linea(nombre, resultados[nombre]["resumen"]), flush=True)
 
     salida = {
         "experimento": "P1 reconocimiento de palabras aisladas, dejando una persona fuera",
         "datos": {"uaemex": str(args.uaemex), "iteso": str(args.iteso) if args.iteso else None,
-                  "secuencias": len(datos), "glosas": K, "personas_validacion": validacion,
-                  "personas_prueba_sin_tocar": sorted(prueba)},
+                  "secuencias": len(datos), "glosas": K, "personas_validacion": personas_de_validacion(datos),
+                  "personas_prueba_sin_tocar": prueba},
         "modelos": resultados,
         "entorno": entorno(),
     }

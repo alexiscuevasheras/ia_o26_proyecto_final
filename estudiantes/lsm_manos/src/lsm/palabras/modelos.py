@@ -8,6 +8,7 @@ Las features se estandarizan con media y desviación del entrenamiento.
 """
 
 from dataclasses import dataclass
+from functools import partial
 
 import numpy as np
 from sklearn.linear_model import LogisticRegression
@@ -120,13 +121,13 @@ class ModeloMLP:
 class ModeloSklearn:
     """Envuelve un clasificador de scikit-learn sobre la secuencia aplanada."""
 
-    def __init__(self, fabrica):
-        self.fabrica = fabrica
+    def __init__(self, clase, **parametros):
+        self.clase, self.parametros = clase, parametros
 
     def ajustar(self, X, y, K, al_terminar_epoca=None):
         self.estandar = Estandar.ajustar(X)
         self.K = K
-        self.modelo = self.fabrica().fit(self.estandar(X).reshape(len(X), -1), y)
+        self.modelo = self.clase(**self.parametros).fit(self.estandar(X).reshape(len(X), -1), y)
         return self
 
     def probabilidades(self, X):
@@ -139,10 +140,11 @@ class ModeloSklearn:
         return P
 
 
+# Fábricas con partial (no lambdas) para que se puedan mandar a otros procesos.
 MODELOS = {
-    "knn": lambda: ModeloSklearn(lambda: KNeighborsClassifier(1)),
-    "logistica": lambda: ModeloSklearn(lambda: LogisticRegression(C=0.1, max_iter=2000)),
-    "svm": lambda: ModeloSklearn(lambda: SVC(C=10, gamma="scale")),
-    "mlp": lambda: ModeloMLP(),
-    "gru": lambda: ModeloGRU(),
+    "knn": partial(ModeloSklearn, KNeighborsClassifier, n_neighbors=1),
+    "logistica": partial(ModeloSklearn, LogisticRegression, C=0.1, max_iter=2000),
+    "svm": partial(ModeloSklearn, SVC, C=10, gamma="scale"),
+    "mlp": ModeloMLP,
+    "gru": ModeloGRU,
 }

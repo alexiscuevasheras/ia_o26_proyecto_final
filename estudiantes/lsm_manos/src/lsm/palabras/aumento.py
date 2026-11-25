@@ -19,11 +19,14 @@ GIRO_MAXIMO = np.deg2rad(10)
 
 
 def deformar_tiempo(X, rng):
-    """t' = t + a·sen(πt): los extremos quedan fijos y el medio se adelanta o atrasa."""
+    """t' = t + a·sen(πt): los extremos quedan fijos y el medio se adelanta o atrasa.
+    Interpolación lineal de todas las columnas a la vez."""
     T = X.shape[0]
     t = np.linspace(0, 1, T)
-    nuevo = np.clip(t + rng.uniform(-0.15, 0.15) * np.sin(np.pi * t), 0, 1)
-    return np.stack([np.interp(nuevo, t, X[:, j]) for j in range(X.shape[1])], axis=1)
+    nuevo = np.clip(t + rng.uniform(-0.15, 0.15) * np.sin(np.pi * t), 0, 1) * (T - 1)
+    i = np.minimum(nuevo.astype(int), T - 2)
+    f = (nuevo - i)[:, None]
+    return X[i] * (1 - f) + X[i + 1] * f
 
 
 def aumentar_una(x, rng):
