@@ -12,7 +12,14 @@ const CONEXIONES_MANO = [
   [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [0, 17], [17, 18], [18, 19], [19, 20],
 ];
 const PALMA = [[0, 1, 5], [0, 5, 9], [0, 9, 13], [0, 13, 17]]; // triángulos sobre los puntos de la mano
-const PUNTAS = new Set([4, 8, 12, 16, 20]);
+// Largo de la palma (muñeca → nudillo del medio) con que se dibuja toda mano. Las
+// grabaciones miden distinto; un poco más grande que la real (~0.09 m) para que la
+// forma se lea a la distancia de la cámara, como en otros avatares de señas.
+const PALMA_AVATAR = 0.105;
+// Radio de cada punto de la mano en fracciones de la palma: más grueso en la base de
+// cada dedo y más fino en la punta; el pulgar, más grueso.
+const RADIO_PUNTO = [0.2, 0.17, 0.155, 0.14, 0.125, 0.15, 0.135, 0.122, 0.11, 0.155, 0.138, 0.124, 0.112,
+  0.15, 0.133, 0.12, 0.108, 0.14, 0.122, 0.11, 0.1];
 
 // Tiempos en segundos (a velocidad 1×).
 const TRANSICION = 0.25;
@@ -315,22 +322,29 @@ function crearMano(escena, materiales) {
   };
 }
 
-function actualizarMano(mano, puntos) {
-  const visible = Boolean(puntos);
+/** La misma forma, escalada desde la muñeca para que la palma mida PALMA_AVATAR. */
+function aTamanoAvatar(puntos) {
+  const k = PALMA_AVATAR / (norma(restar(puntos[9], puntos[0])) || PALMA_AVATAR);
+  return puntos.map((p) => sumar(puntos[0], escalar(restar(p, puntos[0]), k)));
+}
+
+function actualizarMano(mano, crudos) {
+  const visible = Boolean(crudos);
   for (const m of [mano.palma, mano.cojin, ...mano.huesos, ...mano.nudos]) m.visible = visible;
   if (!visible) return;
-  // El grosor sigue al tamaño de la mano: los datos reales no miden 0.09 m de palma exactos.
-  const palma = norma(restar(puntos[9], puntos[0]));
+  const puntos = aTamanoAvatar(crudos);
+  const palma = PALMA_AVATAR;
+  // Cada hueso toma el radio de su punto más delgado y cada nudo el suyo: el dedo se
+  // afina hacia la punta sin «cuentas» en las articulaciones.
   CONEXIONES_MANO.forEach(([a, b], i) => {
-    const enPalma = a === 0 || (b % 4 === 1 && b !== 1); // del puño a los nudillos: más grueso
-    colocarSegmento(mano.huesos[i], puntos[a], puntos[b], palma * (enPalma ? 0.16 : 0.115));
+    colocarSegmento(mano.huesos[i], puntos[a], puntos[b], palma * Math.min(RADIO_PUNTO[a], RADIO_PUNTO[b]));
   });
-  puntos.forEach((p, i) => colocarEsfera(mano.nudos[i], p, palma * (i === 0 ? 0.2 : PUNTAS.has(i) ? 0.11 : 0.12)));
+  puntos.forEach((p, i) => colocarEsfera(mano.nudos[i], p, palma * RADIO_PUNTO[i]));
   // El cojín de la palma: un elipsoide plano entre la muñeca y los nudillos, con los ejes de la mano.
   const [x, y, z] = marcoMano(puntos);
   mano.cojin.position.set(...mezclar(puntos[0], medio(puntos[5], puntos[17]), 0.55));
   orientarObjeto(mano.cojin, x, y, z);
-  mano.cojin.scale.set(0.55 * norma(restar(puntos[5], puntos[17])), 0.5 * palma, 0.16 * palma);
+  mano.cojin.scale.set(0.6 * norma(restar(puntos[5], puntos[17])), 0.55 * palma, 0.22 * palma);
   const posiciones = mano.palma.geometry.attributes.position;
   PALMA.flat().forEach((indice, k) => posiciones.setXYZ(k, ...puntos[indice]));
   posiciones.needsUpdate = true;
