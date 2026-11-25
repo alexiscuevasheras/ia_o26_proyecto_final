@@ -1,0 +1,96 @@
+/* Página voz → señas. Usa los colores de estilos.css. */
+
+nav { font-size: 0.9rem; margin-bottom: 8px; color: var(--suave); }
+nav a { color: var(--acento); }
+nav a[aria-current="page"] { color: var(--tinta); font-weight: 600; text-decoration: none; }
+
+.aviso {
+  max-width: 70ch;
+  margin: 0 0 16px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #d9a400;
+  background: color-mix(in srgb, #ffcc33 22%, var(--tarjeta));
+}
+
+main.voz { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+
+@media (max-width: 760px) {
+  main.voz { grid-template-columns: 1fr; }
+}
+
+.entrada h2:first-child { margin-top: 0; }
+
+#microfono[aria-pressed="true"] { background: #c4352b; }
+
+.parcial { min-height: 1.5em; font-style: italic; color: var(--suave); margin: 8px 0; }
+
+label { display: block; font-size: 0.9rem; color: var(--suave); }
+
+.fila { display: flex; gap: 8px; align-items: center; }
+.fila input { flex: 1; min-width: 0; }
+.fila button { margin-top: 0; }
+
+input[type="text"] {
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--tinta);
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+}
+
+.glosas {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 2rem;
+}
+
+.glosas li {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: 2px solid var(--acento);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.glosas .glosa { background: var(--acento); color: #fff; }
+.glosas .deletreo { border-style: dashed; color: var(--tinta); letter-spacing: 0.08em; }
+.glosas .deletreo small { font-weight: 400; color: var(--suave); letter-spacing: 0; }
+.glosas .actual { transform: scale(1.08); box-shadow: 0 0 0 3px color-mix(in srgb, var(--acento) 35%, transparent); }
+
+#linea { font-family: ui-monospace, monospace; overflow-wrap: anywhere; }
+#estado { color: var(--suave); font-size: 0.9rem; margin-bottom: 0; }
+
+.escenario {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  max-height: 75vh;
+  margin: 0 auto;
+  border-radius: 8px;
+  background: radial-gradient(circle at 50% 35%, var(--tarjeta), var(--fondo));
+}
+
+.escenario canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+.letra-actual {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+}
+
+#letra { font-size: 4rem; font-weight: 800; line-height: 1; color: var(--acento); }
+
+.controles { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 12px; }
+.controles label { display: flex; gap: 6px; }
+.controles input { flex: 1; min-width: 120px; }
+.controles button { margin-top: 0; }
+output { font-variant-numeric: tabular-nums; color: var(--tinta); }

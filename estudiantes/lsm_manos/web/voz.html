@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voz a señas LSM</title>
+  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="voz.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <header>
+    <nav aria-label="Páginas de la demo">
+      <a href="index.html">Señas → texto</a> ·
+      <a href="voz.html" aria-current="page">Voz → señas</a>
+    </nav>
+    <h1>De la voz a la LSM</h1>
+    <p>Habla o escribe en español y un avatar lo seña. La LSM tiene su propia gramática: aquí cada
+      palabra se convierte en su glosa (la seña que le corresponde), en el orden del español, y lo
+      que no está en el vocabulario se deletrea. No es una traducción gramatical completa.</p>
+  </header>
+
+  <p id="aviso-sintetico" class="aviso" hidden>
+    Animaciones sintéticas de prueba: genera <code>modelos/animaciones.json</code>.
+  </p>
+
+  <main class="voz">
+    <section class="entrada">
+      <h2>Lo que quieres decir</h2>
+      <button id="microfono" type="button" aria-pressed="false">Hablar</button>
+      <p class="nota" id="nota-voz">En Chrome el audio se envía a los servidores de Google para
+        transcribirlo; en otros navegadores el reconocimiento de voz puede no existir. Si prefieres
+        que no salga nada de tu computadora, escribe el texto.</p>
+      <p id="parcial" class="parcial" aria-live="polite"></p>
+
+      <form id="formulario">
+        <label for="texto">Texto en español</label>
+        <div class="fila">
+          <input id="texto" type="text" autocomplete="off" placeholder="Buenos días, yo como manzana">
+          <button type="submit">Señar</button>
+        </div>
+      </form>
+
+      <h2>Glosas</h2>
+      <p class="nota">Las glosas llenas tienen seña grabada; las punteadas se deletrean letra por letra.</p>
+      <ol id="glosas" class="glosas" aria-label="Glosas que seña el avatar"></ol>
+      <p id="linea" class="nota"></p>
+      <p id="estado" role="status" aria-live="polite">Cargando el vocabulario y las animaciones…</p>
+    </section>
+
+    <section class="avatar">
+      <div class="escenario">
+        <canvas id="lienzo" aria-label="Avatar que seña en LSM"></canvas>
+        <div class="letra-actual" aria-live="polite">
+          <span id="letra"></span>
+          <span id="nota-letra" class="nota"></span>
+        </div>
+      </div>
+      <div class="controles">
+        <label for="velocidad">Velocidad <output id="valor-velocidad" for="velocidad">1.0×</output></label>
+        <input id="velocidad" type="range" min="0.5" max="1.5" step="0.1" value="1">
+        <button id="repetir" type="button" disabled>Repetir</button>
+      </div>
+      <p class="nota">Arrastra para girar el avatar; la rueda o dos dedos acercan.</p>
+    </section>
+  </main>
+
+  <script type="module" src="voz.js"></script>
+</body>
+</html>
