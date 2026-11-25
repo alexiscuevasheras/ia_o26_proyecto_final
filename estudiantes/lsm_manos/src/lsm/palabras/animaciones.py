@@ -4,13 +4,25 @@ Por glosa se elige el medoide: la repetición cuya secuencia de features
 está, en promedio, más cerca de las demás de esa glosa. No se promedian
 repeticiones porque el promedio de dos movimientos emborrona los dos. Se
 prefiere ITESO (video continuo a 15 fps) sobre UAEMex (~14 fotos sueltas
-por seña) y ambos sobre el dataset propio, y solo se eligen repeticiones donde casi siempre se vio el cuerpo.
+por seña) y ambos sobre el dataset propio.
 
-Coordenadas: las «world» de MediaPipe (metros, x a la derecha de la imagen,
-y hacia abajo, z alejándose de la cámara). En una cámara sin espejo la
-derecha de la imagen es la izquierda de la persona, así que el avatar usa
-(x, −y, −z) con origen entre los hombros, y cada mano se coloca con su
-muñeca sobre la muñeca del cuerpo.
+Cómo se arma cada cuadro. La pose 3D del cuerpo que da MediaPipe en estos
+videos es poco confiable (en UAEMex, ropa negra sobre fondo negro), pero las
+manos sí se detectan bien. Por eso:
+- el torso y la cabeza son un esqueleto fijo de proporciones humanas (el
+  torso de quien seña casi no se mueve, y la pose detectada solo metía ruido);
+- la muñeca sale de la trayectoria 2D de la mano en el marco de los hombros
+  (la misma de las features), pasada a metros con un ancho de hombros de
+  0.36 m; la profundidad se estima: más adelante cuanto más sube la mano;
+- el codo se resuelve con cinemática inversa de dos huesos;
+- la forma de la mano son sus coordenadas 3D («world», en metros), giradas a
+  los ejes del avatar y apoyadas en la muñeca;
+- si quien seña es zurdo, se espeja: el avatar siempre seña con la derecha.
+
+Ejes del avatar: metros, origen entre los hombros, x hacia la izquierda de la
+persona (en una cámara sin espejo, la derecha de la imagen), y hacia arriba,
+z hacia la cámara. Las «world» de MediaPipe tienen y hacia abajo y z
+alejándose, así que se multiplican por (1, −1, −1).
 
 Uso:
     python -m lsm.palabras.animaciones modelos/animaciones.json \
@@ -33,20 +45,37 @@ from .secuencias import preparar_sena, reordenar, secuencia
 
 FPS = 15
 CUERPO_INDICES = [0, 2, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 23, 24]
-MUNECAS = (15, 16)
 PALMA_METROS = 0.09
-CUADROS_UAEMEX = 18  # sus ~14 fotos no tienen tiempo real; 18 cuadros a 15 fps ≈ 1.2 s
-MINIMO_CUERPO = 0.4  # fracción de cuadros con hombros plausibles (con 0.8 quedaban 59 glosas)
-HOMBROS_3D = (0.25, 0.5)  # metros: un ancho de hombros real; fuera de eso el cuerpo está mal detectado
+CUADROS_UAEMEX = 30  # sus ~14 fotos no tienen tiempo real; 30 cuadros a 15 fps = 2 s (con 1.2 s se veía apresurado)
 LETRAS_CON_MOVIMIENTO = ["J", "K", "Ñ", "Q", "X", "Z"]
 EJES = np.array([1.0, -1.0, -1.0])
 # Video continuo de señantes primero; el dataset propio (estudiantes que aprenden LSM)
 # solo para glosas que no estén en los otros.
 PRIORIDAD = {"iteso": 2, "uaemex": 1, "propio": 0}
+# En UAEMex el detector pierde la mano justo cuando sube frente a la cara (caras
+# pixeladas y fotos movidas): una repetición sirve para el avatar solo si la mano
+# dominante se vio levantada (sobre ARRIBA anchos de hombro) en varios cuadros.
+ARRIBA = 1.0
+MINIMO_ARRIBA = 0.3  # fracción de cuadros
+
+# Esqueleto fijo (metros, ejes del avatar), con proporciones de un adulto promedio.
+ANCHO_HOMBROS = 0.36
+BRAZO, ANTEBRAZO = 0.28, 0.25
+ESQUELETO = {
+    0: (0.0, 0.21, 0.10),  # nariz
+    2: (0.032, 0.235, 0.085), 5: (-0.032, 0.235, 0.085),  # ojos
+    7: (0.075, 0.215, 0.0), 8: (-0.075, 0.215, 0.0),  # orejas
+    9: (0.025, 0.165, 0.085), 10: (-0.025, 0.165, 0.085),  # boca
+    11: (ANCHO_HOMBROS / 2, 0.0, 0.0), 12: (-ANCHO_HOMBROS / 2, 0.0, 0.0),  # hombros
+    23: (0.13, -0.50, 0.0), 24: (-0.13, -0.50, 0.0),  # caderas
+}
+HOMBRO = {0: np.array(ESQUELETO[11]), 1: np.array(ESQUELETO[12])}  # brazo 0 = izquierdo
+POLO_CODO = {0: np.array([0.5, -1.0, -0.3]), 1: np.array([-0.5, -1.0, -0.3])}  # abajo, afuera y un poco atrás
 
 
 def interpolar_faltantes(a):
-    """Rellena NaN a lo largo del tiempo (eje 0) con interpolación lineal por coordenada."""
+    """Rellena NaN a lo largo del tiempo (eje 0) con interpolación lineal por
+    coordenada; antes del primer valor y después del último se repite el extremo."""
     a = a.copy()
     plano = a.reshape(len(a), -1)
     t = np.arange(len(a))
@@ -73,33 +102,87 @@ def remuestrear_en_tiempo(a, n):
     return np.stack([np.interp(nuevo, t, plano[:, j]) for j in range(plano.shape[1])], 1).reshape((n,) + a.shape[1:])
 
 
-def cuerpo_plausible(cuerpo_3d):
-    """Cuadros cuyo ancho de hombros 3D es el de una persona real."""
-    ancho = np.linalg.norm(cuerpo_3d[:, 11] - cuerpo_3d[:, 12], axis=1)
-    return np.isfinite(ancho) & (ancho >= HOMBROS_3D[0]) & (ancho <= HOMBROS_3D[1])
+def reposo(brazo):
+    """Muñeca colgando junto a la cadera."""
+    return HOMBRO[brazo] + np.array([0.03 if brazo == 0 else -0.03, -(BRAZO + ANTEBRAZO) * 0.97, 0.04])
 
 
-def clip_de_muestra(cuerpo_3d, manos_3d, n_cuadros=None):
-    """Lista de cuadros {cuerpo, manos} en el sistema del avatar. Los cuadros con
-    el cuerpo mal detectado se descartan y se rellenan por interpolación."""
-    cuerpo_3d = np.where(cuerpo_plausible(cuerpo_3d)[:, None, None], cuerpo_3d, np.nan)
-    cuerpo = suavizar(interpolar_faltantes(cuerpo_3d)) * EJES
-    cuerpo -= cuerpo[:, [11, 12]].mean(axis=1, keepdims=True)
-    presente = ~np.isnan(manos_3d[:, :, 0, 0])
-    manos = suavizar(interpolar_faltantes(manos_3d)) * EJES
+def profundidad(altura):
+    """Las manos en reposo cuelgan junto al cuerpo (z ≈ 0.04); al subir al
+    espacio de señas quedan ~0.3 m al frente. `altura` en anchos de hombro
+    bajo los hombros (como en las features)."""
+    return 0.04 + 0.26 * np.clip((1.6 - altura) / 1.6, 0, 1)
+
+
+def munecas_desde_imagen(manos, centro, escala, espejo):
+    """(F, 2, 3) muñecas en metros del avatar a partir de las manos 2D seguidas."""
+    munecas = np.full((len(manos), 2, 3), np.nan)
+    for brazo in (0, 1):
+        destino = 1 - brazo if espejo else brazo
+        m = manos[:, brazo, 0, :2]
+        x = (m[:, 0] - centro[0]) / escala
+        y = (m[:, 1] - centro[1]) / escala
+        if espejo:
+            x = -x
+        munecas[:, destino] = np.stack([x * ANCHO_HOMBROS, -y * ANCHO_HOMBROS, profundidad(y)], axis=1)
+    for brazo in (0, 1):
+        if np.isnan(munecas[:, brazo, 0]).all():
+            munecas[:, brazo] = reposo(brazo)
+    return interpolar_faltantes(munecas)
+
+
+def alcanzable(hombro, muneca):
+    """Acerca la muñeca al hombro si queda más lejos de lo que mide el brazo."""
+    d = muneca - hombro
+    largo = np.linalg.norm(d)
+    maximo = 0.98 * (BRAZO + ANTEBRAZO)
+    return hombro + d * min(1.0, maximo / max(largo, 1e-9))
+
+
+def codo_ik(hombro, muneca, polo):
+    """Cinemática inversa de dos huesos: el codo queda en el plano del polo,
+    con los largos BRAZO y ANTEBRAZO."""
+    d = muneca - hombro
+    largo = max(np.linalg.norm(d), 1e-9)
+    u = d / largo
+    v = polo - np.dot(polo, u) * u
+    v /= max(np.linalg.norm(v), 1e-9)
+    coseno = np.clip((BRAZO ** 2 + largo ** 2 - ANTEBRAZO ** 2) / (2 * BRAZO * largo), -1, 1)
+    return hombro + BRAZO * (coseno * u + np.sqrt(1 - coseno ** 2) * v)
+
+
+def forma_3d(mano_3d, espejo):
+    """Puntos 3D de una mano relativos a su muñeca, en ejes del avatar."""
+    m = mano_3d * EJES
+    if espejo:
+        m = m * np.array([-1.0, 1.0, 1.0])
+    return m - m[0]
+
+
+def clip_de_muestra(manos, manos_3d, centro, escala, espejo, n_cuadros=None):
+    """Lista de cuadros {cuerpo, manos} en el sistema del avatar (ver el docstring)."""
+    munecas = suavizar(munecas_desde_imagen(manos, centro, escala, espejo))
+    formas = np.full_like(manos_3d, np.nan)
+    for brazo in (0, 1):
+        formas[:, 1 - brazo if espejo else brazo] = [
+            forma_3d(m, espejo) if np.isfinite(m).all() else np.full((21, 3), np.nan) for m in manos_3d[:, brazo]]
+    presente = np.isfinite(formas[:, :, 0, 0])
+    formas = interpolar_faltantes(formas)
     if n_cuadros:
-        cuerpo, manos = remuestrear_en_tiempo(cuerpo, n_cuadros), remuestrear_en_tiempo(manos, n_cuadros)
+        munecas, formas = remuestrear_en_tiempo(munecas, n_cuadros), remuestrear_en_tiempo(formas, n_cuadros)
         presente = remuestrear_en_tiempo(presente.astype(float), n_cuadros) > 0.5
     cuadros = []
-    for c, m, p in zip(cuerpo, manos, presente):
+    for muneca, forma, visto in zip(munecas, formas, presente):
+        puntos = {k: np.array(v) for k, v in ESQUELETO.items()}
         lista_manos = []
-        for lado in (0, 1):
-            if not p[lado] or np.isnan(m[lado]).any():
-                lista_manos.append(None)
-                continue
-            colocada = m[lado] - m[lado, 0] + c[MUNECAS[lado]]
-            lista_manos.append(colocada.round(4).tolist())
-        cuadros.append({"cuerpo": c[CUERPO_INDICES].round(4).tolist(), "manos": lista_manos})
+        for brazo in (0, 1):
+            w = alcanzable(HOMBRO[brazo], muneca[brazo])
+            puntos[(15, 16)[brazo]] = w
+            puntos[(13, 14)[brazo]] = codo_ik(HOMBRO[brazo], w, POLO_CODO[brazo])
+            ok = visto[brazo] and np.isfinite(forma[brazo]).all()
+            lista_manos.append((forma[brazo] + w).round(4).tolist() if ok else None)
+        cuadros.append({"cuerpo": np.array([puntos[k] for k in CUERPO_INDICES]).round(4).tolist(),
+                        "manos": lista_manos})
     return cuadros
 
 
@@ -120,19 +203,20 @@ def animaciones_de_glosas(rutas):
         dominante = dominancia_por_persona(z, personas, respaldo)
         es_iteso = z["dataset"][0] == "iteso"
         for i, (a, b) in enumerate(cortes(z)):
-            if cuerpo_plausible(z["cuerpo_3d"][a:b]).mean() < MINIMO_CUERPO:
+            p = personas[i]
+            aspecto = float(z["aspecto"][i])
+            manos, centro, escala, origen = preparar_sena(z["cuerpo"][a:b], z["manos"][a:b], aspecto, respaldo.get(p))
+            altura = (manos[:, dominante[p], 0, 1] - centro[1]) / escala
+            if np.mean(altura < ARRIBA) < MINIMO_ARRIBA:  # NaN cuenta como no vista
                 continue
-            glosa = glosa_de(vocabulario, z["dataset"][i], z["clase"][i])
-            centro = respaldo.get(personas[i])
-            X = secuencia(z["cuerpo"][a:b], z["manos"][a:b], float(z["aspecto"][i]), dominante[personas[i]], 16, centro)
-            *_, origen = preparar_sena(z["cuerpo"][a:b], z["manos"][a:b], float(z["aspecto"][i]), centro)
+            X = secuencia(z["cuerpo"][a:b], z["manos"][a:b], aspecto, dominante[p], 16, respaldo.get(p))
             manos_3d = reordenar(z["manos_3d"][a:b], origen)  # mismas manos por brazo que en las features
-            candidatos.setdefault(glosa, []).append(
-                (PRIORIDAD[z["dataset"][i]], X, (z["cuerpo_3d"][a:b], manos_3d, None if es_iteso else CUADROS_UAEMEX),
-                 f"{personas[i]}/{z['ident'][i]}"))
+            datos = (manos, manos_3d, centro, escala, dominante[p] == 0, None if es_iteso else CUADROS_UAEMEX)
+            glosa = glosa_de(vocabulario, z["dataset"][i], z["clase"][i])
+            candidatos.setdefault(glosa, []).append((PRIORIDAD[z["dataset"][i]], X, datos, f"{p}/{z['ident'][i]}"))
     glosas = {}
     for glosa, lista in sorted(candidatos.items()):
-        mejor = max(p for p, *_ in lista)
+        mejor = max(c[0] for c in lista)
         lista = [c for c in lista if c[0] == mejor]
         _, _, datos, origen = lista[medoide(np.stack([c[1] for c in lista]))]
         glosas[glosa] = {"origen": origen, "cuadros": clip_de_muestra(*datos)}

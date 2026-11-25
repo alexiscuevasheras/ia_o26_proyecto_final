@@ -39,7 +39,7 @@ const DIGRAFOS = new Set(["LL", "RR", "CH"]);
 const ESPACIO_DELETREO = [0.04, -0.06, 0.28];
 const POLO_CODO = { izq: [0.4, -1, -0.2], der: [-0.4, -1, -0.2] }; // el codo cae hacia abajo y afuera
 
-const COLORES = { piel: 0xe2b08c, ropa: 0x4a6fa5, base: 0x34465f, rasgos: 0x2a2a30 };
+const COLORES = { piel: 0xd9a27e, ropa: 0x3d5a80, cabello: 0x2b2118, rasgos: 0x2a2226 };
 
 // ---------- Vectores como arreglos [x, y, z] ----------
 
@@ -195,32 +195,37 @@ function prepararClip(glosa, esqueleto, relajada) {
 
 // ---------- Escena de three.js ----------
 
-function color(nombre) {
-  return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
-}
-
 function crearMateriales() {
-  const material = (hex, extra = {}) => new THREE.MeshStandardMaterial({ color: hex, roughness: 0.65, ...extra });
+  const material = (hex, extra = {}) => new THREE.MeshStandardMaterial({ color: hex, roughness: 0.6, ...extra });
   return {
-    piel: material(COLORES.piel),
+    piel: material(COLORES.piel, { roughness: 0.5 }),
     ropa: material(COLORES.ropa, { roughness: 0.85 }),
-    base: material(COLORES.base, { roughness: 0.9 }),
-    rasgos: material(COLORES.rasgos),
-    palma: material(COLORES.piel, { side: THREE.DoubleSide }),
+    cabello: material(COLORES.cabello, { roughness: 0.9 }),
+    rasgos: material(COLORES.rasgos, { roughness: 0.3 }),
+    palma: material(COLORES.piel, { roughness: 0.5, side: THREE.DoubleSide }),
   };
 }
 
+// Torso como sólido de revolución: perfil (radio, altura) de la cadera al cuello, en
+// metros para un ancho de hombros de 0.36 m; luego se aplana de frente a atrás.
+const PERFIL_TORSO = [
+  [0.0, -0.56], [0.13, -0.55], [0.15, -0.5], [0.14, -0.38], [0.135, -0.28], [0.15, -0.16],
+  [0.165, -0.06], [0.17, 0.0], [0.15, 0.035], [0.09, 0.06], [0.055, 0.07], [0.0, 0.07],
+].map(([r, y]) => new THREE.Vector2(r, y));
+
 const GEOMETRIA = {
-  esfera: new THREE.SphereGeometry(1, 24, 16),
-  cilindro: new THREE.CylinderGeometry(1, 1, 1, 16),
-  torso: new THREE.CylinderGeometry(1, 0.78, 1, 32),
-  base: new THREE.CylinderGeometry(0.8, 1, 1, 32),
+  esfera: new THREE.SphereGeometry(1, 32, 20),
+  capsula: new THREE.CapsuleGeometry(1, 1, 8, 16),
+  cilindro: new THREE.CylinderGeometry(1, 1, 1, 20),
+  torso: new THREE.LatheGeometry(PERFIL_TORSO, 48),
+  cabello: new THREE.SphereGeometry(1, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.55),
 };
 
-function malla(escena, geometria, material) {
+function malla(padre, geometria, material) {
   const m = new THREE.Mesh(geometria, material);
   m.castShadow = true;
-  escena.add(m);
+  m.receiveShadow = true;
+  padre.add(m);
   return m;
 }
 
@@ -228,13 +233,14 @@ const tmpA = new THREE.Vector3();
 const tmpB = new THREE.Vector3();
 const EJE_Y = new THREE.Vector3(0, 1, 0);
 
+/** Un cilindro (radio 1, alto 1) de a a b; las uniones las tapan esferas. */
 function colocarSegmento(m, a, b, radio) {
   tmpA.set(...a);
   tmpB.set(...b).sub(tmpA);
   const largo = tmpB.length();
   m.position.set(...medio(a, b));
   m.quaternion.setFromUnitVectors(EJE_Y, tmpB.divideScalar(largo || 1));
-  m.scale.set(radio, largo, radio);
+  m.scale.set(radio, Math.max(largo, 1e-4), radio);
 }
 
 function colocarEsfera(m, p, radio) {
@@ -248,18 +254,37 @@ function orientarObjeto(objeto, x, y, z) {
     new THREE.Vector3(...x), new THREE.Vector3(...y), new THREE.Vector3(...z)));
 }
 
+/** Cabeza en coordenadas locales de radio ~1: cráneo, cabello, orejas, ojos, cejas y nariz. */
 function crearCabeza(escena, materiales) {
   const cabeza = new THREE.Group();
   const craneo = malla(cabeza, GEOMETRIA.esfera, materiales.piel);
-  craneo.scale.set(1, 1.2, 1.05);
+  craneo.scale.set(0.86, 1.08, 0.95);
+  const menton = malla(cabeza, GEOMETRIA.esfera, materiales.piel);
+  menton.position.set(0, -0.42, 0.18);
+  menton.scale.set(0.55, 0.5, 0.6);
+  const cabello = malla(cabeza, GEOMETRIA.cabello, materiales.cabello);
+  cabello.scale.set(0.9, 1.1, 1.0);
+  cabello.position.set(0, 0.06, -0.04);
+  cabello.rotation.x = -0.35;
   for (const lado of [-1, 1]) {
+    const oreja = malla(cabeza, GEOMETRIA.esfera, materiales.piel);
+    oreja.position.set(0.84 * lado, -0.02, -0.02);
+    oreja.scale.set(0.12, 0.22, 0.14);
     const ojo = malla(cabeza, GEOMETRIA.esfera, materiales.rasgos);
-    ojo.position.set(0.36 * lado, 0.15, 0.93);
-    ojo.scale.setScalar(0.09);
+    ojo.position.set(0.3 * lado, 0.08, 0.84);
+    ojo.scale.set(0.09, 0.11, 0.06);
+    const ceja = malla(cabeza, GEOMETRIA.capsula, materiales.cabello);
+    ceja.position.set(0.3 * lado, 0.27, 0.84);
+    ceja.rotation.z = Math.PI / 2 + 0.12 * lado;
+    ceja.scale.set(0.035, 0.16, 0.035);
   }
   const nariz = malla(cabeza, GEOMETRIA.esfera, materiales.piel);
-  nariz.position.set(0, -0.08, 1.02);
-  nariz.scale.setScalar(0.13);
+  nariz.position.set(0, -0.1, 0.95);
+  nariz.scale.set(0.11, 0.16, 0.12);
+  const boca = malla(cabeza, GEOMETRIA.capsula, materiales.rasgos);
+  boca.position.set(0, -0.38, 0.8);
+  boca.rotation.z = Math.PI / 2;
+  boca.scale.set(0.025, 0.14, 0.025);
   escena.add(cabeza);
   return cabeza;
 }
@@ -281,8 +306,11 @@ function actualizarMano(mano, puntos) {
   if (!visible) return;
   // El grosor sigue al tamaño de la mano: los datos reales no miden 0.09 m de palma exactos.
   const palma = norma(restar(puntos[9], puntos[0]));
-  CONEXIONES_MANO.forEach(([a, b], i) => colocarSegmento(mano.huesos[i], puntos[a], puntos[b], palma * 0.085));
-  puntos.forEach((p, i) => colocarEsfera(mano.nudos[i], p, palma * (PUNTAS.has(i) ? 0.085 : 0.1)));
+  CONEXIONES_MANO.forEach(([a, b], i) => {
+    const enPalma = a === 0 || (b % 4 === 1 && b !== 1); // del puño a los nudillos: más grueso
+    colocarSegmento(mano.huesos[i], puntos[a], puntos[b], palma * (enPalma ? 0.16 : 0.115));
+  });
+  puntos.forEach((p, i) => colocarEsfera(mano.nudos[i], p, palma * (i === 0 ? 0.2 : PUNTAS.has(i) ? 0.11 : 0.12)));
   const posiciones = mano.palma.geometry.attributes.position;
   PALMA.flat().forEach((indice, k) => posiciones.setXYZ(k, ...puntos[indice]));
   posiciones.needsUpdate = true;
@@ -292,17 +320,16 @@ function actualizarMano(mano, puntos) {
 
 function crearCuerpo(escena) {
   const materiales = crearMateriales();
-  const segmento = (material) => malla(escena, GEOMETRIA.cilindro, material);
-  const esfera = (material) => malla(escena, GEOMETRIA.esfera, material);
   return {
     cabeza: crearCabeza(escena, materiales),
-    cuello: segmento(materiales.piel),
+    cuello: malla(escena, GEOMETRIA.cilindro, materiales.piel),
     torso: malla(escena, GEOMETRIA.torso, materiales.ropa),
-    hombros: segmento(materiales.ropa),
-    base: malla(escena, GEOMETRIA.base, materiales.base),
     brazos: ["izq", "der"].map(() => ({
-      hombro: esfera(materiales.ropa), brazo: segmento(materiales.ropa), codo: esfera(materiales.ropa),
-      antebrazo: segmento(materiales.piel), muneca: esfera(materiales.piel),
+      hombro: malla(escena, GEOMETRIA.esfera, materiales.ropa),
+      brazo: malla(escena, GEOMETRIA.cilindro, materiales.ropa),
+      codo: malla(escena, GEOMETRIA.esfera, materiales.ropa),
+      antebrazo: malla(escena, GEOMETRIA.cilindro, materiales.piel),
+      puno: malla(escena, GEOMETRIA.cilindro, materiales.ropa),
     })),
     manos: [crearMano(escena, materiales), crearMano(escena, materiales)],
   };
@@ -312,68 +339,65 @@ function actualizarCabeza(cabeza, p) {
   const orejas = medio(p(7), p(8));
   const x = unitario(restar(p(7), p(8)));
   const arriba = perpendicular(restar(medio(p(2), p(5)), medio(p(9), p(10))), x, [0, 1, 0]);
-  const radio = 0.62 * norma(restar(p(7), p(8)));
-  cabeza.position.set(...sumar(orejas, escalar(arriba, 0.25 * radio)));
+  const radio = 0.72 * norma(restar(p(7), p(8)));
+  cabeza.position.set(...sumar(orejas, escalar(arriba, 0.1 * radio)));
   cabeza.scale.setScalar(radio);
   orientarObjeto(cabeza, x, arriba, cruz(x, arriba));
   return { centro: cabeza.position.toArray(), arriba, radio };
 }
 
-function actualizarCuerpo(partes, pose, esqueleto, piso) {
+function actualizarCuerpo(partes, pose, esqueleto) {
   const p = (mp) => esqueleto.p(pose, mp);
   const hombros = medio(p(11), p(12));
-  const caderas = medio(p(23), p(24));
   const ancho = norma(restar(p(11), p(12)));
+  const k = ancho / 0.36;
 
   const cabeza = actualizarCabeza(partes.cabeza, p);
-  colocarSegmento(partes.cuello, hombros, sumar(cabeza.centro, escalar(cabeza.arriba, -0.9 * cabeza.radio)), ancho * 0.17);
+  const baseCuello = sumar(hombros, [0, 0.05 * k, -0.01]);
+  colocarSegmento(partes.cuello, baseCuello, sumar(cabeza.centro, escalar(cabeza.arriba, -0.75 * cabeza.radio)), 0.045 * k);
 
   const x = unitario(restar(p(11), p(12)));
-  const y = perpendicular(restar(hombros, caderas), x, [0, 1, 0]);
-  const alto = norma(restar(hombros, caderas)) + 0.04;
-  partes.torso.position.set(...sumar(medio(hombros, caderas), escalar(y, -0.02)));
+  const y = perpendicular(restar(hombros, medio(p(23), p(24))), x, [0, 1, 0]);
+  partes.torso.position.set(...hombros);
   orientarObjeto(partes.torso, x, y, cruz(x, y));
-  partes.torso.scale.set(ancho * 0.5, alto, ancho * 0.3);
-  colocarSegmento(partes.hombros, p(12), p(11), ancho * 0.16);
-
-  const anchoCaderas = norma(restar(p(23), p(24)));
-  const alturaBase = caderas[1] - piso;
-  partes.base.position.set(caderas[0], piso + alturaBase / 2, caderas[2]);
-  partes.base.scale.set(anchoCaderas * 0.62, alturaBase, anchoCaderas * 0.45);
+  partes.torso.scale.set(k, k, k * 0.62);
 
   Object.values(esqueleto.brazos).forEach((br, i) => {
-    const partesBrazo = partes.brazos[i];
-    const [hombro, codo, muneca] = [br.hombro, br.codo, br.muneca].map((k) => pose.cuerpo[k]);
-    colocarEsfera(partesBrazo.hombro, hombro, ancho * 0.16);
-    colocarSegmento(partesBrazo.brazo, hombro, codo, ancho * 0.13);
-    colocarEsfera(partesBrazo.codo, codo, ancho * 0.12);
-    colocarSegmento(partesBrazo.antebrazo, codo, muneca, ancho * 0.1);
-    colocarEsfera(partesBrazo.muneca, muneca, ancho * 0.09);
+    const piezas = partes.brazos[i];
+    const [hombro, codo, muneca] = [br.hombro, br.codo, br.muneca].map((j) => pose.cuerpo[j]);
+    const hacia = unitario(restar(hombro, hombros));
+    const articulacion = sumar(hombro, escalar(hacia, -0.02 * k)); // un poco adentro: el hombro redondea el torso
+    colocarEsfera(piezas.hombro, sumar(articulacion, [0, -0.01 * k, 0]), 0.058 * k);
+    colocarSegmento(piezas.brazo, articulacion, codo, 0.048 * k);
+    colocarEsfera(piezas.codo, codo, 0.046 * k);
+    colocarSegmento(piezas.antebrazo, codo, muneca, 0.036 * k);
+    // Puño de la manga a medio antebrazo: la manga es corta, el resto es piel.
+    colocarSegmento(piezas.puno, codo, mezclar(codo, muneca, 0.18), 0.043 * k);
   });
   partes.manos.forEach((mano, m) => actualizarMano(mano, pose.manos[m]));
 }
 
 function crearPiso(escena, y) {
-  const piso = new THREE.Mesh(new THREE.CircleGeometry(0.9, 64), new THREE.MeshStandardMaterial({ roughness: 1 }));
+  const piso = new THREE.Mesh(new THREE.CircleGeometry(0.7, 64), new THREE.ShadowMaterial({ opacity: 0.25 }));
   piso.rotation.x = -Math.PI / 2;
   piso.position.y = y;
   piso.receiveShadow = true;
-  const pintar = () => piso.material.color.set(color("--borde") || "#dddcd7");
-  pintar();
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", pintar);
   escena.add(piso);
 }
 
 function crearLuces(escena, centro) {
-  escena.add(new THREE.HemisphereLight(0xffffff, 0x8a8a90, 1.6));
-  const sol = new THREE.DirectionalLight(0xffffff, 2.2);
-  sol.position.set(1.2, 2.6, 2.2);
-  sol.target.position.set(...centro);
-  sol.castShadow = true;
-  sol.shadow.mapSize.set(1024, 1024);
-  Object.assign(sol.shadow.camera, { left: -1.2, right: 1.2, top: 1.2, bottom: -1.2, near: 0.5, far: 8 });
-  sol.shadow.bias = -0.0005;
-  escena.add(sol, sol.target);
+  escena.add(new THREE.HemisphereLight(0xfff4ea, 0x5a6070, 1.4));
+  const principal = new THREE.DirectionalLight(0xffffff, 2.4);
+  principal.position.set(0.9, 2.2, 2.4);
+  principal.target.position.set(...centro);
+  principal.castShadow = true;
+  principal.shadow.mapSize.set(2048, 2048);
+  Object.assign(principal.shadow.camera, { left: -1, right: 1, top: 1, bottom: -1, near: 0.5, far: 8 });
+  principal.shadow.bias = -0.0003;
+  principal.shadow.radius = 4;
+  const contra = new THREE.DirectionalLight(0xbfd4ff, 1.2); // luz de contorno que separa la figura del fondo
+  contra.position.set(-1.5, 1.5, -2);
+  escena.add(principal, principal.target, contra);
 }
 
 // ---------- El avatar ----------
@@ -400,6 +424,8 @@ export function crearAvatar(canvas, datos, eventos) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const camara = new THREE.PerspectiveCamera(32, 1, 0.05, 20);
   const distancia = 1.15 * (cabezaY - piso) / 2 / Math.tan(THREE.MathUtils.degToRad(16));
