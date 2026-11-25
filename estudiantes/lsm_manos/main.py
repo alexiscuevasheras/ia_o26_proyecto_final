@@ -1,17 +1,30 @@
-"""Ejemplo: responde en http://localhost:8000. Cámbialo por tu proyecto."""
+"""Sirve la demo en http://localhost:8000: la página (web/) y los modelos (modelos/).
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
+Los modelos no están en la imagen: compose.yaml monta ./modelos (ver README,
+«Cómo correrlo»). La raíz redirige a la página de señas.
+"""
+
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+CARPETA = Path(__file__).resolve().parent
 
 
-class Hola(BaseHTTPRequestHandler):
+class Demo(SimpleHTTPRequestHandler):
     def do_GET(self):
-        cuerpo = "Tu proyecto corre aquí. Cambia main.py por el tuyo.\n".encode()
-        self.send_response(200)
-        self.send_header("Content-Type", "text/plain; charset=utf-8")
-        self.end_headers()
-        self.wfile.write(cuerpo)
+        if self.path in ("/", "/index.html"):
+            self.send_response(302)
+            self.send_header("Location", "/web/")
+            self.end_headers()
+            return
+        super().do_GET()
 
 
 if __name__ == "__main__":
+    faltan = [m for m in ("palabras.json", "pesos.json", "hand_landmarker.task", "pose_landmarker_full.task",
+                          "animaciones.json") if not (CARPETA / "modelos" / m).exists()]
+    if faltan:
+        print(f"Aviso: faltan en modelos/: {', '.join(faltan)} (ver README)", flush=True)
     print("Sirviendo en http://localhost:8000", flush=True)
-    HTTPServer(("0.0.0.0", 8000), Hola).serve_forever()
+    ThreadingHTTPServer(("0.0.0.0", 8000), partial(Demo, directory=str(CARPETA))).serve_forever()

@@ -8,5 +8,4 @@ services:
       - path: .env
         required: false
     volumes:
-      - ./datos:/app/datos
-      - ./modelos:/app/modelos
+      - ./modelos:/app/modelos:ro

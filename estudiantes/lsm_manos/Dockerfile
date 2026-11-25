@@ -1,7 +1,7 @@
-# Ejemplo para un proyecto en Python. Cámbialo a lo que use el tuyo.
+# Sirve la demo estática; los modelos llegan por el volumen ./modelos de compose.yaml.
 FROM python:3.12-slim
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
+COPY main.py .
+COPY web/ web/
+EXPOSE 8000
 CMD ["python", "main.py"]
