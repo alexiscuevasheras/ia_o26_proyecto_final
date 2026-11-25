@@ -61,6 +61,47 @@ Outmane Oubram (UAEM), Bassam Ali (UADY), Noureddine Lakouari (INAOE).
 - Tamaño total y cómo identifican persona y letra en los nombres: sin verificar. La API da un enlace
   de descarga por archivo, sin login aparente.
 
+## P1. Palabras: UAEMex «Mexican sign language dataset»
+
+- Cita: Espejel, J.; Domínguez, L. Y.; Cervantes, J.; Cervantes, J. (2023). *Mexican sign language
+  dataset*. Mendeley Data, V1. doi:10.17632/6rj76z6y3n.1 (Universidad Autónoma del Estado de México).
+- Licencia: CC BY 4.0, verificada en la API pública de Mendeley (`data_licence`).
+- Contenido verificado con la API: 31,417 archivos y 2.03 GB, de los cuales 31,415 son JPG, más
+  `classes.xlsx` y un `.mov`. El zip en caché pesa 1,885,633,282 bytes.
+- Estructura: `MSLwords1/<clase>/<persona><clase>/<cuadro>.jpg`. Son 249 clases y 11 personas
+  (01–11); hay 2,447 carpetas de persona y clase, no 2,739, porque faltan algunas. Las personas 10
+  y 11 tienen menos señas (163 y 86 carpetas).
+- Unos 12 cuadros por seña. Fondo y ropa negros. **Las caras vienen pixeladas en el dataset.**
+- `classes.xlsx` da el nombre en inglés de cada clase (número = carpeta). **Supuesto sin
+  confirmar:** que el número del xlsx corresponde a la carpeta; se revisará con señas obvias
+  (YO apunta al pecho, TÚ al frente).
+- Detección: con el umbral por omisión (0.5), PoseLandmarker encuentra el cuerpo en 47 % de los
+  cuadros y con 0.2 en 74 % (150 cuadros de prueba). El extractor usa 0.2 y toma la mediana de
+  los hombros de cada seña.
+- **Prueba final:** las personas 10 y 11, fijadas por regla (las dos con número más alto) antes
+  de ver resultados.
+
+## P2. Palabras: MX-ITESO-100
+
+- Cita: Martínez Sánchez, V. H. (2026). *ITESO-MX-100*. Mendeley Data, V1. doi:10.17632/g45jkzys4f.1.
+  Artículo: «Exploring a Novel Mexican Sign Language Lexicon Video Dataset», *Multimodal
+  Technologies and Interaction* 7(8):83 (2023), doi:10.3390/mti7080083.
+- Licencia: CC BY 4.0, verificada en la API.
+- El artículo describe 100 señas, 5,000 videos y 3 personas. **Lo publicado en Mendeley son 49
+  carpetas (de «Abrir» a «Él»):** 2,159 videos (2,107 MP4 y 52 MOV) que pesan 10.73 GB.
+- No dice quién es quién. **Hipótesis:** el sufijo del nombre de archivo (`12`, `12_1`, `12_2`)
+  es la persona; los `IMG_xxxx.mov` se tratan como una persona aparte. Hay que comprobarlo con
+  las proporciones del cuerpo.
+- Videos de teléfono en condiciones no controladas. El extractor los baja a 15 cuadros por
+  segundo y a 960 px de lado mayor.
+
+## Vocabulario
+
+`src/lsm/palabras/vocabulario.csv` asigna a cada clase una glosa en español y sinónimos (para la
+voz). Lo tradujimos nosotros desde los nombres en inglés de UAEMex y los nombres en español de
+ITESO, así que puede tener errores. Las glosas que aparecen en los dos datasets se unen; la
+misma glosa puede tener variantes regionales distintas.
+
 ## Herramientas
 
 - MediaPipe Python `mediapipe==1.2.3` (Apache 2.0, publicado el 2026-11-11), con ruedas `py3` para
@@ -70,6 +111,9 @@ Outmane Oubram (UAEM), Bassam Ali (UADY), Noureddine Lakouari (INAOE).
   enlaza en https://huggingface.co/litert-community/MediaPipe-HandLandmarker-Full ; también responde
   `storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task`.
   Licencia del modelo: sin verificar (falta leer la tarjeta del modelo).
+- Modelo `pose_landmarker_full.task`: 9,398,198 bytes, bajado de
+  `storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task`.
+  También va en `modelos/` y nunca al repo.
 - Lateralidad: según la documentación, izquierda y derecha son las del sujeto, y una imagen reflejada
   invierte la etiqueta. Hay que probarlo con la cámara en modo espejo.
 
