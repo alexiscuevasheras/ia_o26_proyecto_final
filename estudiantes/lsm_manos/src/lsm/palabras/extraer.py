@@ -69,15 +69,18 @@ def muestras_iteso(raiz):
     return muestras
 
 
+CONFIANZA_MANOS = 0.3
 _detectores = None
+_confianza_manos = CONFIANZA_MANOS
 
 
-def _iniciar(modo):
-    global _detectores
+def _iniciar(modo, confianza_manos=CONFIANZA_MANOS):
+    global _detectores, _confianza_manos
+    _confianza_manos = confianza_manos
     corriendo = vision.RunningMode.VIDEO if modo == "video" else vision.RunningMode.IMAGE
     manos = vision.HandLandmarker.create_from_options(vision.HandLandmarkerOptions(
         base_options=BaseOptions(model_asset_path=str(MODELO_MANOS)), running_mode=corriendo,
-        num_hands=2, min_hand_detection_confidence=0.3, min_hand_presence_confidence=0.3))
+        num_hands=2, min_hand_detection_confidence=confianza_manos, min_hand_presence_confidence=confianza_manos))
     # Con 0.5 (el valor por defecto) el cuerpo sale en 47 % de los cuadros de UAEMex
     # (ropa negra sobre fondo negro y caras pixeladas); con 0.2, en 74 %.
     cuerpo = vision.PoseLandmarker.create_from_options(vision.PoseLandmarkerOptions(
@@ -136,7 +139,7 @@ def procesar(muestra):
             aspecto = bgr.shape[1] / bgr.shape[0]
             cuadros.append(puntos_de_cuadro(cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)))
     else:
-        _iniciar("video")  # VIDEO exige tiempos crecientes: detectores nuevos por video
+        _iniciar("video", _confianza_manos)  # VIDEO exige tiempos crecientes: detectores nuevos por video
         cap = cv2.VideoCapture(str(muestra.archivos[0]))
         fps = cap.get(cv2.CAP_PROP_FPS) or 30
         paso = max(1, round(fps / FPS_ITESO))
@@ -190,12 +193,14 @@ def main():
     ap.add_argument("raiz", type=Path)
     ap.add_argument("salida", type=Path)
     ap.add_argument("--procesos", type=int, default=max(1, (os.cpu_count() or 2) - 1))
+    ap.add_argument("--confianza-manos", type=float, default=CONFIANZA_MANOS,
+                    help="umbral de detección y presencia de manos de MediaPipe")
     args = ap.parse_args()
 
     muestras = (muestras_uaemex if args.dataset == "uaemex" else muestras_iteso)(args.raiz)
     print(f"{args.dataset}: {len(muestras)} muestras", flush=True)
     resultados = []
-    with ProcessPoolExecutor(args.procesos, initializer=_iniciar, initargs=("imagen",)) as ejecutor:
+    with ProcessPoolExecutor(args.procesos, initializer=_iniciar, initargs=("imagen", args.confianza_manos)) as ejecutor:
         for i, r in enumerate(ejecutor.map(procesar, muestras, chunksize=4), 1):
             resultados.append(r)
             if i % 200 == 0:
