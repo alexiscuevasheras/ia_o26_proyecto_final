@@ -236,3 +236,42 @@ arruine los pesos de un solo paso.
    gradiente hasta llegar a x_1 en cada caso.
 3. ¿Por qué adaptar solo V y c a una persona nueva es un problema convexo, y adaptar toda la GRU
    no?
+
+## Hito 6 · Qué tan bien reconoce palabras, y por qué falla (2026-11-25)
+
+### Qué hicimos
+
+- P1: cinco modelos con validación dejando una persona fuera en UAEMex (249 glosas).
+- P2: ablaciones de la GRU (quitar forma, posición, mano no dominante, aumento; cambiar T).
+- P3: entrenar en un dataset y evaluar en el otro, en las 11 glosas compartidas.
+- P5: calibración por temperatura y umbral de «no sé».
+- P6: diagnóstico con división al azar (personas conocidas) para ubicar el error.
+
+Todos los números están en el README y en `resultados/p*.json`.
+
+### La lección de P6: separar las causas del error
+
+Con personas nuevas (P1) la GRU acierta 0.107 en UAEMex. Hay al menos tres explicaciones
+posibles y cada una pide un remedio distinto:
+
+| Si el problema fuera… | …con personas conocidas esperaríamos | Remedio |
+|---|---|---|
+| generalizar a personas | acierto alto | adaptar a quien usa la página (P4) |
+| pocos ejemplos por glosa | acierto alto en ITESO completo, bajo con pocos | más datos |
+| la calidad de los datos | acierto bajo aun con personas conocidas | otros datos o mejor extracción |
+
+Resultado: UAEMex 0.090 con personas conocidas (igual que con nuevas); ITESO 0.970, y 0.892
+con solo 7 ejemplos por glosa. Lo que más pesa en UAEMex es la calidad de los datos (MediaPipe no
+ve mano en el 27 % de los cuadros), aunque P6 no separa del todo el número de glosas (249 contra
+42) ni que en ITESO la misma persona repite cada seña.
+
+Moraleja: antes de cambiar la red, mide dónde está el error. Un 10 % podía leerse como «la GRU es
+mala»; P6 muestra que con buenos datos la misma GRU llega a 97 %.
+
+### Tres preguntas (contestar sin ver el código)
+
+1. ¿Por qué P6 no sirve como resultado de generalización, y aun así sirve para algo?
+2. En P2, quitar la forma de la mano baja a 0.040 y quitar la posición casi no cambia nada.
+   ¿Qué te dice eso sobre qué información usa la GRU?
+3. P5 da AUROC 0.537 entre señas conocidas y desconocidas. ¿Qué significa un AUROC de 0.5 y por
+   qué la temperatura no lo mejora?
