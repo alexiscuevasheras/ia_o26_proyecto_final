@@ -22,8 +22,8 @@ personas que el modelo no vio.**
 2. **Dice «no sé».** En lugar de inventar una palabra, ofrece sus 3 mejores opciones. El umbral
    se elige con validación por persona (P5).
 
-> Estado: en desarrollo. Los números de este README salen de `resultados/*.json`; los
-> experimentos de palabras (P1–P5) se están corriendo.
+> Estado: en desarrollo. Los números de este README salen de `resultados/*.json`. P1–P3, P5 y
+> P6 están corridos; P4 espera el dataset propio.
 
 ## Cómo correrlo
 
@@ -86,14 +86,30 @@ En cada dataset hay personas de prueba fijadas antes de ver resultados, que no s
 elegir nada.
 
 - **Letras (D1):** E1–E3 y E8, en `resultados/e*.json`.
-- **Palabras:**
-  - P1: modelos, dejando una persona fuera.
-  - P2: ablaciones.
-  - P3: de un dataset al otro.
-  - P4: adaptación con k ejemplos.
-  - P5: «no sé».
+- **Palabras** (`resultados/p*.json`; azar con 249 glosas: 0.004):
 
-  Todos se guardan en `resultados/p*.json`.
+  | Experimento | Qué mide | Resultado (top-1) |
+  |---|---|---|
+  | P1, UAEMex | persona nueva, 249 glosas | GRU 0.107 ± 0.045 (top-5 0.266); logística 0.093, SVM 0.084, red densa 0.080, kNN 0.054 |
+  | P1, + ITESO al entrenar | persona nueva de UAEMex, 280 glosas | GRU 0.091; no ayuda |
+  | P2 | qué parte importa (GRU) | sin la forma de la mano 0.040; solo la mano dominante 0.078; sin la posición 0.100; sin aumento 0.105 |
+  | P3 | de un dataset al otro, 11 glosas compartidas (azar 0.091) | UAEMex → ITESO 0.295; ITESO → UAEMex 0.162 |
+  | P4 | adaptación con k ejemplos | pendiente: necesita el dataset propio (ver abajo) |
+  | P5 | calibración y «no sé» | ECE de 0.389 a 0.018 con temperatura 2.95; AUROC conocidas/desconocidas 0.537 (casi azar) |
+  | P6 | diagnóstico con personas conocidas (división al azar) | UAEMex 0.090; ITESO 0.970; ITESO con 7 ejemplos por glosa 0.892 |
+
+  **Qué dicen juntos.** P6 no mide generalización: las mismas personas están en entrenamiento
+  y en evaluación. Sirve para ubicar el error. En ITESO la GRU acierta casi todo, incluso con
+  tan pocos ejemplos por glosa como UAEMex, así que la red y la entrada funcionan. En UAEMex
+  falla igual con personas conocidas que con nuevas (0.090 contra 0.107): ahí el límite está en
+  los datos, no en generalizar a personas. Dos diferencias que P6 no separa: UAEMex tiene 249
+  glosas contra 42, y cada persona hace cada seña una sola vez, mientras que en ITESO la misma
+  persona la repite. Lo que sí medimos de la calidad: MediaPipe no ve mano en el 27 % de los
+  cuadros de UAEMex y pierde la mano levantada frente a la cara (fondo y ropa negros).
+
+  **Siguiente paso:** el dataset propio, grabado con `web/grabar.html` en las mismas
+  condiciones que la demo (video continuo de cámara web, ~10 repeticiones por persona y
+  palabra). Con él se corren P1 con `--propios` y P4.
 
 ## Créditos
 
