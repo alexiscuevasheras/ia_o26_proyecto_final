@@ -1,6 +1,6 @@
 # Los datos de tu proyecto. Llena todo; el check del PR lo revisa.
 estado = "propuesta"   # "propuesta" en el primer PR; "entrega" en el segundo
-titulo = "Manos que hablan: alfabeto de la LSM con una red hecha desde cero que se adapta a quien la usa"
-tema = "Red neuronal en NumPy (unidad 10) que reconoce el alfabeto manual de la LSM con puntos de MediaPipe; en el navegador se adapta a cada persona con pocos ejemplos, dice «no sé» y explica su decisión"
+titulo = "Manos que hablan: traductor LSM ⇄ español con redes hechas desde cero"
+tema = "Una GRU y una red densa escritas en NumPy reconocen palabras y letras de la LSM con puntos de MediaPipe; en el navegador traduce señas a texto y voz a un avatar 3D que seña, se adapta a quien la usa y dice «no sé»"
 equipo = ["usuario-a", "usuario-b"]   # PENDIENTE: los 3 logins reales de GitHub
 demo = ""              # URL de la demo; vacío en la propuesta

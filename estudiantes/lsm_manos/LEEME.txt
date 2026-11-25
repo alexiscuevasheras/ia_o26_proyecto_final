@@ -1,0 +1,252 @@
+LEEME · Cómo ponerse al día con lsm_manos (para personas y para sus agentes)
+==========================================================================
+
+Escrito el 2026-11-25. Si eres un agente (Claude Code u otro): lee este archivo completo antes de
+tocar nada; aquí está todo el contexto que no se deduce del código. Si algo de aquí contradice el
+README del repo del curso (../../README.md) o herramientas/revisar.py, manda el repo del curso.
+
+--------------------------------------------------------------------------
+0. QUÉ ES ESTO, EN UNA FRASE
+--------------------------------------------------------------------------
+
+Proyecto final de Introducción a la IA (ITAM), equipo de Alexis Cuevas, Nadia Medina y Bernardo
+Murrieta: un traductor bidireccional Lengua de Señas Mexicana (LSM) ⇄ español que corre completo
+en el navegador.
+
+  - Señas → texto (web/index.html): cámara → MediaPipe (puntos del cuerpo y las manos) → una GRU
+    escrita desde cero en NumPy (y su espejo en JavaScript) reconoce palabras de 280 glosas; si
+    la persona deletrea, la red densa de letras (unidad 10 del curso) reconoce el alfabeto.
+    Subtítulos, voz, «no sé» con sus 3 mejores opciones y adaptación a quien la usa (al corregir
+    una palabra se reentrena la capa de salida en el navegador).
+  - Voz → señas (web/voz.html): micrófono o texto → glosas → avatar 3D (three.js) que seña con
+    movimientos tomados de grabaciones reales; lo que no está en el vocabulario lo deletrea.
+  - Grabar datos (web/grabar.html): grabador de nuestro propio dataset (solo puntos, nunca video).
+
+Historia: empezó como «solo el alfabeto»; el profesor dijo que eso era muy fácil («ya lo hicieron
+en 3 horas») y pidió palabras completas y un traductor de verdad, bidireccional. De ahí el alcance
+actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por falta de tiempo.
+
+--------------------------------------------------------------------------
+1. REGLAS DEL EQUIPO (respetarlas siempre, también los agentes)
+--------------------------------------------------------------------------
+
+  1. Honestidad estricta. No inventar datasets, URLs, versiones ni resultados. Todo número que se
+     reporte sale de un archivo en resultados/*.json generado por un script del repo. Si algo no
+     se pudo verificar, se escribe «sin verificar». Si un resultado contradice lo que se dijo
+     antes, se corrige en voz alta (ya pasó con P6; ver sección 6).
+  2. Pedir permiso antes de instalar algo pesado o descargar más de 500 MB.
+  3. Solo se toca estudiantes/lsm_manos/. Nunca push al repo del curso (upstream); todo va al fork
+     (origin = github.com/alexiscuevasheras/ia_o26_proyecto_final).
+  4. No cambiar git config, no falsificar autoría ni fechas. Cada quien hace commits con SU cuenta
+     de GitHub (el curso revisa quién hizo qué; si todo sale de una sola cuenta se nota y se
+     avisa). Nada de «Co-Authored-By» de herramientas ni «Generated with ...» en commits o PRs.
+  5. Nunca se suben datos/ ni modelos/ (están en .gitignore), ni fotos, ni caras, ni datos
+     personales. Ningún archivo de más de 5 MB y la carpeta completa, máximo 50 MB (lo revisa
+     herramientas/revisar.py). Hoy lo versionado pesa ~1.3 MB.
+  6. Commits pequeños, en español, que digan qué y por qué. Código limpio, sin código muerto.
+  7. Las decisiones de producto son del equipo, no del agente (por ejemplo, si se sube pesos.json).
+
+--------------------------------------------------------------------------
+2. LLEGAR EXACTAMENTE A DONDE ESTAMOS
+--------------------------------------------------------------------------
+
+2.1 Código
+
+    git clone https://github.com/alexiscuevasheras/ia_o26_proyecto_final.git
+    cd ia_o26_proyecto_final/estudiantes/lsm_manos
+    git log --oneline | head     # el último commit de esta etapa es el que agrega este LEEME
+
+  Necesitas Python 3.12+ (se usó 3.14) y Node 20+ (se usó 26) para las pruebas de JavaScript.
+
+    make entorno        # .venv con numpy, pytest, torch (solo para comprobar gradientes),
+                        # mediapipe 1.2.3 y scikit-learn (baselines). Pesa bastante.
+    make pruebas        # 65 pruebas de Python deben pasar
+    node --test tests/web/*.test.mjs   # 22 pruebas de JS deben pasar
+
+  Todos los comandos de Python se corren desde estudiantes/lsm_manos con:
+    export PYTHONPATH=src
+
+2.2 Datos y modelos (no están en git). Dos caminos:
+
+  CAMINO CORTO (recomendado para ponerse al día): pedirle a Alexis por Drive los archivos ya
+  generados y ponerlos tal cual:
+    datos/secuencias_uaemex.npz      22 MB   puntos de UAEMex
+    datos/secuencias_iteso.npz      222 MB   puntos de ITESO (los 2,159 videos)
+    datos/landmarks_d1.csv          350 MB   puntos del alfabeto D1 (solo si vas a tocar letras)
+    modelos/palabras.json           1.7 MB   GRU de palabras (UAEMex + ITESO, 280 glosas)
+    modelos/animaciones.json        6.4 MB   clips del avatar (241 glosas + 21 letras)
+    modelos/pesos.json              1.0 MB   red de letras
+    modelos/hand_landmarker.task    7.5 MB   detector de MediaPipe (también se baja, ver abajo)
+    modelos/pose_landmarker_full.task 9.0 MB detector de MediaPipe (también se baja, ver abajo)
+  Con eso ya corren la demo y todos los experimentos.
+
+  CAMINO LARGO (reproducir todo desde cero; ~14 GB de descargas, pedir permiso antes):
+
+    # Detectores de MediaPipe (van en modelos/)
+    curl -L -o modelos/hand_landmarker.task \
+      https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task
+    curl -L -o modelos/pose_landmarker_full.task \
+      https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/latest/pose_landmarker_full.task
+
+    # Palabras. UAEMex: zip de 1.89 GB. ITESO: 2,159 videos, 10.7 GB (CC BY 4.0 los dos)
+    .venv/bin/python -m lsm.palabras.descargar uaemex datos/crudos/uaemex --zip
+    .venv/bin/python -m lsm.palabras.descargar iteso datos/crudos/iteso
+    #   (si fallan videos, se vuelve a correr: salta los que ya están y verifica sha256)
+
+    # Puntos de cada seña (MediaPipe; tarda, usa varios procesos)
+    .venv/bin/python -m lsm.palabras.extraer uaemex datos/crudos/uaemex datos/secuencias_uaemex.npz
+    .venv/bin/python -m lsm.palabras.extraer iteso datos/crudos/iteso datos/secuencias_iteso.npz
+
+    # Calibración (P5 con ITESO) → modelo de la página → animaciones del avatar
+    .venv/bin/python -m lsm.palabras.experimentos.p5_no_se datos/secuencias_uaemex.npz \
+        --iteso datos/secuencias_iteso.npz --salida resultados/p5_no_se_con_iteso.json
+    .venv/bin/python -m lsm.palabras.exportar modelo modelos/palabras.json \
+        --uaemex datos/secuencias_uaemex.npz --iteso datos/secuencias_iteso.npz \
+        --no-se resultados/p5_no_se_con_iteso.json
+    .venv/bin/python -m lsm.palabras.animaciones modelos/animaciones.json \
+        --secuencias datos/secuencias_uaemex.npz datos/secuencias_iteso.npz \
+        --letras datos/landmarks_d1.csv
+
+    # Letras (D1): 7z de 4.8 GB en Zenodo (registro 10067509, md5 en docs/DATOS.md). Zenodo va
+    # a ~0.6 MB/s: más de 2 horas; usar caffeinate y corriente.
+    .venv/bin/python -m lsm.landmarks --archivo datos/d1_zip/MSL-ABC.7z \
+        --salida datos/landmarks_d1.csv --modelo modelos/hand_landmarker.task
+    .venv/bin/python -m lsm.exportar pesos modelos/pesos.json
+
+2.3 La demo
+
+    make demo     # o: python3 -m http.server 8000 --bind 127.0.0.1
+    # Chrome: http://localhost:8000/web/        (señas → texto, pide la cámara)
+    #         http://localhost:8000/web/voz.html  (voz → señas; el reconocimiento de voz de
+    #                                               Chrome manda el audio a Google; escribir no)
+    #         http://localhost:8000/web/grabar.html (grabar el dataset propio)
+
+  Docker: hay Dockerfile y compose.yaml (imagen estática que sirve la página, con modelos/
+  montado de solo lectura). Todavía NO se ha probado (el demonio de Docker estaba apagado).
+
+--------------------------------------------------------------------------
+3. DATOS: LO QUE HAY QUE SABER (detalle y citas en docs/DATOS.md)
+--------------------------------------------------------------------------
+
+  UAEMex «Mexican sign language dataset» — Mendeley, doi:10.17632/6rj76z6y3n.1, CC BY 4.0.
+    249 palabras, 11 personas (01–11), 31,415 JPG (~12 fotos por seña, una repetición por
+    persona y palabra). Caras pixeladas, ropa negra sobre fondo negro: MediaPipe no ve mano en
+    ~27 % de los cuadros y pierde la mano levantada frente a la cara.
+    PRUEBA FINAL FIJA: personas 10 y 11 (las de número más alto). No se usan para elegir nada.
+  ITESO-MX-100 — Mendeley, doi:10.17632/g45jkzys4f.1, CC BY 4.0.
+    El artículo dice 100 señas; Mendeley publica solo 49 carpetas: 2,159 videos (10.7 GB), 42
+    glosas útiles. Videos de teléfono, 75 cuadros a 15 fps. Dos manos visibles en 48 % de los
+    cuadros, cuerpo en 100 %.
+    OJO: NO dice quién es quién. La hipótesis «el sufijo del archivo es la persona» es FALSA
+    (1,854 de 2,159 videos no tienen sufijo). Por eso ITESO solo sirve para entrenar, para el
+    avatar, para P3 y para P6; nunca para evaluar por persona.
+  D1 alfabeto estático (Zenodo 10067509, CC BY 4.0): 21 letras, 20 participantes; prueba
+    oficial participantes 18 y 20.
+  Vocabulario: src/lsm/palabras/vocabulario.csv (traducción nuestra; puede tener errores).
+
+  Trampas de descarga ya resueltas (no repetir el diagnóstico):
+    - Mendeley responde 403 al User-Agent de urllib → descargar.py usa uno propio.
+    - El inventario de Mendeley (24 MB) se colgaba → se guarda en caché.
+    - Mendeley limita a ~25 fotos/min → por eso UAEMex se baja como zip (--zip).
+    - Timeouts cortos y reintentos que nunca lanzan excepción.
+    - Indexar un .npz lo descomprime entero cada vez → usar conjunto.leer_secuencias (carga una
+      vez a un dict; bajó la carga de 249 s a 1.4 s).
+
+--------------------------------------------------------------------------
+4. CÓMO FUNCIONA (mapa de archivos)
+--------------------------------------------------------------------------
+
+  src/redneuronal/red.py           red densa de la unidad 10 (letras)
+  src/redneuronal/recurrente.py    GRU desde cero: adelante, BPTT (probada contra diferencias
+                                   finitas), Adam con recorte; salida softmax(V[h_T; h̄] + c)
+  src/lsm/palabras/secuencias.py   features de una seña: T=16 momentos × 126 números (por mano,
+                                   dominante y luego no dominante: muñeca en el marco de los
+                                   hombros (2), forma de la mano como en letras (60), presencia (1)).
+                                   Marco robusto: escala = mediana de la palma / 0.24; centro =
+                                   hombros solo si su ancho es plausible; seguimiento de cada mano
+                                   a su brazo; los zurdos se espejan.
+  src/lsm/palabras/conjunto.py     carga, personas, glosas, dominancia, personas de prueba
+  src/lsm/palabras/modelos.py      GRU (oculta 128, 60 épocas, aumento de datos), MLP, sklearn
+  src/lsm/palabras/adaptar.py      adaptación: solo V y c (convexo), η=0.05, 100 pasos
+  src/lsm/palabras/exportar.py     modelo para la web y casos de paridad Python↔JS
+  src/lsm/palabras/animaciones.py  clips del avatar: esqueleto fijo, muñecas desde la mano 2D,
+                                   codo por cinemática inversa, forma de la mano en 3D; limpieza
+                                   (sin detecciones sueltas, filtro de Hampel, reposo si la mano
+                                   casi no se ve, sin atravesar cabeza/torso)
+  src/lsm/palabras/importar_propios.py  JSON de grabar.html → npz del dataset propio
+  src/lsm/palabras/experimentos/   P1–P6 (ver sección 5); comun.py tiene la validación
+  web/secuencias.js, gru.js        espejo exacto de Python (pruebas de paridad)
+  web/segmentador.js, en_vivo.js   corta de reposo a reposo; letra vs palabra; «no sé»
+  web/avatar.js                    avatar three.js 0.170.0
+  docs/FORMATOS.md                 formato de los JSON (modelos, animaciones, sesiones)
+  docs/NOTAS_ESTUDIO.md            derivaciones y preguntas de examen (hitos 1–6): ¡léanlas!
+
+--------------------------------------------------------------------------
+5. RESULTADOS HASTA HOY (todos en resultados/*.json; tabla en README.md)
+--------------------------------------------------------------------------
+
+  Validación: dejando una persona fuera (las 9 de UAEMex que no son de prueba). Azar con 249
+  glosas: 0.004.
+
+  P1 UAEMex, persona nueva (top-1):  GRU 0.107 ± 0.045 (top-5 0.266) · logística 0.093 ·
+                                     SVM 0.084 · red densa 0.080 · kNN 0.054
+  P1 + ITESO al entrenar (280 glosas): GRU 0.094 — no ayuda a reconocer personas nuevas de UAEMex
+  P2 ablaciones (GRU): sin forma de la mano 0.040 · solo dominante 0.078 · sin posición 0.100 ·
+                       sin aumento 0.105 · T=8 0.102 · T=32 0.107
+  P3 entre datasets (11 glosas compartidas, azar 0.091): UAEMex→ITESO 0.296; ITESO→UAEMex 0.182
+  P4 adaptación con k ejemplos: PENDIENTE, necesita el dataset propio (script ya listo y probado
+     de punta a punta con datos falsos)
+  P5 «no sé»: temperatura baja el ECE de 0.389 a 0.018 (τ 2.95); con ITESO 0.451 → 0.016 (τ 3.13,
+     es la del modelo de la página). Ningún umbral llega a 90 % de exactitud → umbral 0.
+     Distinguir señas conocidas de desconocidas: AUROC 0.537 (casi azar).
+  P6 diagnóstico con personas conocidas (división al azar; NO mide generalización):
+     UAEMex 0.090 · ITESO 0.984 · ITESO con solo 7 ejemplos por glosa 0.876.
+
+  Lectura (la importante para la tesis): la red y las features SÍ funcionan (98 % en ITESO). En
+  UAEMex falla igual con personas conocidas que con nuevas, así que su límite son sus datos, no
+  generalizar a personas. P6 no separa del todo dos factores: 249 glosas contra 42, y que en
+  ITESO la misma persona repite la seña. Corrección registrada: primero dijimos que el problema
+  era «generalizar a personas nuevas»; P6 lo desmintió y se corrigió.
+
+--------------------------------------------------------------------------
+6. QUÉ FALTA (en orden de impacto)
+--------------------------------------------------------------------------
+
+  1. GRABAR EL DATASET PROPIO — es la palanca principal y necesita a Nadia y Bernardo.
+     web/grabar.html: 50 glosas predeterminadas × ~10 repeticiones por persona (30–40 min cada
+     quien), con la cámara web, igual que la demo. Descarga un JSON por sesión (solo puntos y un
+     alias, nunca video ni nombre). Después:
+       mkdir -p datos/propios   # ahí van los JSON (datos/ no se sube)
+       .venv/bin/python -m lsm.palabras.importar_propios datos/propios/*.json \
+           --salida datos/secuencias_propias.npz
+       .venv/bin/python -m lsm.palabras.experimentos.p1_reconocimiento datos/secuencias_uaemex.npz \
+           --iteso datos/secuencias_iteso.npz --propios datos/secuencias_propias.npz \
+           --salida resultados/p1_palabras_con_propios.json
+       .venv/bin/python -m lsm.palabras.experimentos.p4_adaptacion datos/secuencias_uaemex.npz \
+           datos/secuencias_propias.npz --iteso datos/secuencias_iteso.npz
+     y volver a exportar el modelo con --propios.
+  2. proyecto.toml: poner los 3 logins reales de GitHub en `equipo` (hoy tiene marcadores, y el
+     revisor del curso falla por eso). Cada quien agrega el suyo en su primer commit.
+  3. El PR de la propuesta al repo del curso (lo abre el equipo, no un agente).
+  4. Probar Docker (docker compose up) y documentar el resultado.
+  5. Preguntas pendientes al profesor: ¿equipo de 3 permitido?, ¿modelos dentro de Docker o
+     montados?, fecha de entrega.
+  6. Evaluación humana del avatar con señantes (protocolo en docs/EVALUACION_HUMANA.md).
+  7. BITACORA.md está vacía: cada quien registra lo que hizo, con evidencia.
+  8. Decidir si se borra la carpeta vieja Redes/lsm_manos/ (fuera del repo, en la compu de Alexis).
+
+--------------------------------------------------------------------------
+7. CÓMO TRABAJAR SIN PISARSE
+--------------------------------------------------------------------------
+
+  - Una rama por tarea (git checkout -b nadia/grabar-dataset), commits pequeños en español,
+    pull request a main del fork, revisión por alguien distinto de quien lo hizo.
+  - Antes de cada PR: make pruebas, node --test tests/web/*.test.mjs y
+      python3 ../../herramientas/revisar.py .     (desde estudiantes/lsm_manos)
+  - Si cambias features en Python, cambia también web/secuencias.js y regenera la paridad:
+      .venv/bin/python -m lsm.palabras.exportar paridad web/fixtures/paridad_palabras.json
+  - Si cambias algo que mueve resultados, vuelve a correr el experimento y sube el JSON nuevo
+    junto con el cambio; el README y docs/NOTAS_ESTUDIO.md citan esos números.
+
+Instrucción para agentes: antes de afirmar algo sobre el proyecto, verifícalo en el código o en
+resultados/*.json; este archivo describe el estado del 2026-11-25 y puede haber quedado viejo.
