@@ -84,7 +84,10 @@ function copiarPose(pose) {
   return { cuerpo: pose.cuerpo.map((p) => [...p]), manos: pose.manos.map((m) => m && m.map((p) => [...p])) };
 }
 
-/** Marco propio de una mano derecha: x hacia el índice, y hacia el dedo medio, z la palma. */
+/**
+ * Marco propio de una mano derecha: x del meñique al índice, y hacia el dedo medio y
+ * z = x × y, que en una mano derecha apunta al dorso (no a la palma).
+ */
 function marcoMano(forma) {
   const y = unitario(restar(forma[9], forma[0]));
   const x = perpendicular(restar(forma[5], forma[17]), y, [1, 0, 0]);
@@ -100,7 +103,8 @@ function orientarMano(forma, codo, muneca, esIzquierda) {
   if (esIzquierda) return orientarMano(forma, espejo(codo), espejo(muneca), false).map(espejo);
   const [fx, fy, fz] = marcoMano(forma);
   const y = unitario(restar(muneca, codo));
-  const z = perpendicular([1, 0, 0], y, [0, 0, 1]);
+  // El brazo derecho está en −x: el dorso mira hacia afuera (−x) y la palma hacia el cuerpo.
+  const z = perpendicular([-1, 0, 0], y, [0, 0, -1]);
   const x = cruz(y, z);
   return forma.map((p) => {
     const q = restar(p, forma[0]);
