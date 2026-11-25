@@ -62,6 +62,13 @@ Demo local:
 make demo        # abrir http://localhost:8000/web/ en Chrome (pide la cámara)
 ```
 
+Con Docker (probado con Docker 29.5; la imagen pesa ~200 MB y no lleva modelos, que se montan
+de `modelos/` en solo lectura):
+
+```bash
+docker compose up --build   # abrir http://localhost:8000
+```
+
 ## Cómo funciona
 
 | Pieza | Dónde | Qué hace |

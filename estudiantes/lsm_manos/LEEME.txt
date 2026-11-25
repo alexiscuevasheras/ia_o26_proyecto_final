@@ -121,8 +121,9 @@ actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por 
     #                                               Chrome manda el audio a Google; escribir no)
     #         http://localhost:8000/web/grabar.html (grabar el dataset propio)
 
-  Docker: hay Dockerfile y compose.yaml (imagen estática que sirve la página, con modelos/
-  montado de solo lectura). Todavía NO se ha probado (el demonio de Docker estaba apagado).
+  Docker: docker compose up --build  → http://localhost:8000. Imagen estática (~200 MB, sin
+  modelos) que sirve la página; modelos/ se monta de solo lectura. Probado el 2026-11-25 con
+  Docker 29.5: sirve las tres páginas y los modelos, y el avatar seña desde el contenedor.
 
 --------------------------------------------------------------------------
 3. DATOS: LO QUE HAY QUE SABER (detalle y citas en docs/DATOS.md)
@@ -228,7 +229,7 @@ actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por 
   2. proyecto.toml: poner los 3 logins reales de GitHub en `equipo` (hoy tiene marcadores, y el
      revisor del curso falla por eso). Cada quien agrega el suyo en su primer commit.
   3. El PR de la propuesta al repo del curso (lo abre el equipo, no un agente).
-  4. Probar Docker (docker compose up) y documentar el resultado.
+  4. (Hecho) Docker probado; falta decidir con el profesor si los modelos van dentro de la imagen.
   5. Preguntas pendientes al profesor: ¿equipo de 3 permitido?, ¿modelos dentro de Docker o
      montados?, fecha de entrega.
   6. Evaluación humana del avatar con señantes (protocolo en docs/EVALUACION_HUMANA.md).
