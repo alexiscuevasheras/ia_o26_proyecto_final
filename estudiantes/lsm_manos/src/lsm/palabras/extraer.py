@@ -43,9 +43,11 @@ class Muestra:
 
 
 def muestras_uaemex(raiz):
-    """MSLwords1/<clase>/<persona><clase>/<cuadros>.jpg"""
+    """.../MSLwords1/<clase>/<persona><clase>/<cuadros>.jpg (el zip de Mendeley
+    agrega carpetas arriba de MSLwords1)."""
     muestras = []
-    for carpeta in sorted(raiz.glob("MSLwords1/*/*")):
+    base = next(raiz.rglob("MSLwords1"))
+    for carpeta in sorted(base.glob("*/*")):
         fotos = tuple(sorted(carpeta.glob("*.jpg")))
         if carpeta.is_dir() and fotos:
             clase = carpeta.parent.name
