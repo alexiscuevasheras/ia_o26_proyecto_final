@@ -19,6 +19,17 @@ manos sí se detectan bien. Por eso:
   los ejes del avatar y apoyadas en la muñeca;
 - si quien seña es zurdo, se espeja: el avatar siempre seña con la derecha.
 
+Limpieza, porque una sola detección falsa deja un brazo levantado todo el clip:
+- se quitan las detecciones sueltas (rachas de menos de MINIMA_RACHA cuadros) y
+  los saltos de la muñeca que se alejan mucho de sus vecinos (filtro de Hampel);
+- una mano que casi no se ve (menos de PRESENCIA_MINIMA del clip) se queda en
+  reposo, y antes de su primera detección y después de la última sale del
+  reposo y vuelve a él, en vez de quedarse congelada;
+- la muñeca no sube más que la coronilla, y si la mano entra en la cabeza o
+  en el torso se empuja hacia adelante;
+- entre las repeticiones de una glosa se descartan las que quedan fuera del
+  espacio de señas antes de elegir el medoide.
+
 Ejes del avatar: metros, origen entre los hombros, x hacia la izquierda de la
 persona (en una cámara sin espejo, la derecha de la imagen), y hacia arriba,
 z hacia la cámara. Las «world» de MediaPipe tienen y hacia abajo y z
@@ -72,6 +83,15 @@ ESQUELETO = {
 HOMBRO = {0: np.array(ESQUELETO[11]), 1: np.array(ESQUELETO[12])}  # brazo 0 = izquierdo
 POLO_CODO = {0: np.array([0.5, -1.0, -0.3]), 1: np.array([-0.5, -1.0, -0.3])}  # abajo, afuera y un poco atrás
 
+MINIMA_RACHA = 2
+PRESENCIA_MINIMA = 0.25
+RAMPA = 4  # cuadros para salir del reposo o volver a él
+HAMPEL_VENTANA, HAMPEL_MINIMO = 2, 0.12  # vecinos de cada lado; metros que siempre se toleran
+CORONILLA = 0.30  # altura máxima de la muñeca (la cabeza del avatar llega a ~0.34 m)
+# Volúmenes que la mano no puede atravesar, como los dibuja web/avatar.js, con margen.
+CABEZA_CENTRO, CABEZA_RADIOS = np.array([0.0, 0.226, 0.0]), np.array([0.105, 0.135, 0.125])
+TORSO_FRENTE, TORSO_ANCHO, TORSO_ALTURA = 0.13, 0.19, (-0.56, 0.05)
+
 
 def interpolar_faltantes(a):
     """Rellena NaN a lo largo del tiempo (eje 0) con interpolación lineal por
@@ -114,9 +134,49 @@ def profundidad(altura):
     return 0.04 + 0.26 * np.clip((1.6 - altura) / 1.6, 0, 1)
 
 
+def sin_rachas_cortas(presente, minimo=MINIMA_RACHA):
+    """Quita las detecciones que duran menos de `minimo` cuadros seguidos."""
+    limpio = presente.copy()
+    inicio = None
+    for t, visto in enumerate(np.append(presente, False)):
+        if visto and inicio is None:
+            inicio = t
+        elif not visto and inicio is not None:
+            if t - inicio < minimo:
+                limpio[inicio:t] = False
+            inicio = None
+    return limpio
+
+
+def sin_saltos(trayectoria, presente):
+    """Filtro de Hampel: descarta los cuadros cuya muñeca se aleja de la mediana
+    de sus vecinos más de 3 desviaciones (y más de HAMPEL_MINIMO metros)."""
+    limpio = presente.copy()
+    vistos = np.flatnonzero(presente)
+    for k, t in enumerate(vistos):
+        vecinos = trayectoria[vistos[max(0, k - HAMPEL_VENTANA):k + HAMPEL_VENTANA + 1]]
+        mediana = np.median(vecinos, axis=0)
+        mad = np.median(np.linalg.norm(vecinos - mediana, axis=1))
+        if np.linalg.norm(trayectoria[t] - mediana) > max(3 * 1.4826 * mad, HAMPEL_MINIMO):
+            limpio[t] = False
+    return limpio
+
+
+def con_rampas_al_reposo(trayectoria, presente, brazo):
+    """Antes de la primera detección y después de la última, el reposo (con
+    RAMPA cuadros de transición); los huecos de en medio se interpolan."""
+    t = trayectoria.copy()
+    t[~presente] = np.nan
+    vistos = np.flatnonzero(presente)
+    t[:max(0, vistos[0] - RAMPA)] = reposo(brazo)
+    t[min(len(t), vistos[-1] + RAMPA + 1):] = reposo(brazo)
+    return interpolar_faltantes(t)
+
+
 def munecas_desde_imagen(manos, centro, escala, espejo):
-    """(F, 2, 3) muñecas en metros del avatar a partir de las manos 2D seguidas."""
-    munecas = np.full((len(manos), 2, 3), np.nan)
+    """(F, 2, 3) muñecas en metros del avatar a partir de las manos 2D seguidas, limpias."""
+    munecas = np.full((len(manos), 2, 3), reposo(0))
+    presentes = np.zeros((len(manos), 2), bool)
     for brazo in (0, 1):
         destino = 1 - brazo if espejo else brazo
         m = manos[:, brazo, 0, :2]
@@ -124,11 +184,42 @@ def munecas_desde_imagen(manos, centro, escala, espejo):
         y = (m[:, 1] - centro[1]) / escala
         if espejo:
             x = -x
-        munecas[:, destino] = np.stack([x * ANCHO_HOMBROS, -y * ANCHO_HOMBROS, profundidad(y)], axis=1)
-    for brazo in (0, 1):
-        if np.isnan(munecas[:, brazo, 0]).all():
-            munecas[:, brazo] = reposo(brazo)
-    return interpolar_faltantes(munecas)
+        crudas = np.stack([x * ANCHO_HOMBROS, -y * ANCHO_HOMBROS, profundidad(y)], axis=1)
+        presente = sin_rachas_cortas(np.isfinite(crudas).all(axis=1))
+        presente = sin_saltos(crudas, presente)
+        if presente.mean() < PRESENCIA_MINIMA:
+            munecas[:, destino], presentes[:, destino] = reposo(destino), False
+            continue
+        munecas[:, destino] = con_rampas_al_reposo(crudas, presente, destino)
+        presentes[:, destino] = presente
+    return munecas, presentes
+
+
+def en_espacio_de_senas(muneca):
+    """Baja la muñeca a la coronilla si la detección la dejó más arriba."""
+    return np.array([muneca[0], min(muneca[1], CORONILLA), muneca[2]])
+
+
+def adelante_para_no_atravesar(puntos):
+    """Cuánto mover la mano hacia la cámara (z) para que ningún punto quede
+    dentro de la cabeza (elipsoide) ni detrás del frente del torso."""
+    empuje = 0.0
+    rel = (puntos - CABEZA_CENTRO) / CABEZA_RADIOS
+    dentro = (rel ** 2).sum(axis=1) < 1
+    if dentro.any():
+        superficie = CABEZA_RADIOS[2] * np.sqrt(np.clip(1 - rel[dentro, 0] ** 2 - rel[dentro, 1] ** 2, 0, None))
+        empuje = max(empuje, float(np.max(CABEZA_CENTRO[2] + superficie - puntos[dentro, 2])))
+    frente = ((np.abs(puntos[:, 0]) < TORSO_ANCHO) & (puntos[:, 1] > TORSO_ALTURA[0])
+              & (puntos[:, 1] < TORSO_ALTURA[1]) & (puntos[:, 2] < TORSO_FRENTE))
+    if frente.any():
+        empuje = max(empuje, float(np.max(TORSO_FRENTE - puntos[frente, 2])))
+    return empuje
+
+
+def fuera_del_espacio(manos, centro, escala, espejo):
+    """Fracción de cuadros con una muñeca detectada sobre la coronilla."""
+    munecas, presentes = munecas_desde_imagen(manos, centro, escala, espejo)
+    return float(np.mean(((munecas[:, :, 1] > CORONILLA) & presentes).any(axis=1)))
 
 
 def alcanzable(hombro, muneca):
@@ -173,12 +264,13 @@ def clip_de_muestra(manos, manos_3d, centro, escala, espejo, n_cuadros=None):
     """Lista de cuadros {cuerpo, manos} en el sistema del avatar (ver el docstring)."""
     inicio, fin = sin_reposo_largo(manos, centro, escala)
     manos, manos_3d = manos[inicio:fin], manos_3d[inicio:fin]
-    munecas = suavizar(munecas_desde_imagen(manos, centro, escala, espejo))
+    munecas, presente = munecas_desde_imagen(manos, centro, escala, espejo)
+    munecas = suavizar(munecas)
     formas = np.full_like(manos_3d, np.nan)
     for brazo in (0, 1):
         formas[:, 1 - brazo if espejo else brazo] = [
             forma_3d(m, espejo) if np.isfinite(m).all() else np.full((21, 3), np.nan) for m in manos_3d[:, brazo]]
-    presente = np.isfinite(formas[:, :, 0, 0])
+    presente &= np.isfinite(formas[:, :, 0, 0])
     formas = interpolar_faltantes(formas)
     if n_cuadros:
         munecas, formas = remuestrear_en_tiempo(munecas, n_cuadros), remuestrear_en_tiempo(formas, n_cuadros)
@@ -188,10 +280,12 @@ def clip_de_muestra(manos, manos_3d, centro, escala, espejo, n_cuadros=None):
         puntos = {k: np.array(v) for k, v in ESQUELETO.items()}
         lista_manos = []
         for brazo in (0, 1):
-            w = alcanzable(HOMBRO[brazo], muneca[brazo])
+            w = alcanzable(HOMBRO[brazo], en_espacio_de_senas(muneca[brazo]))
+            ok = visto[brazo] and np.isfinite(forma[brazo]).all()
+            w = w + [0, 0, adelante_para_no_atravesar(forma[brazo] + w if ok else w[None])]
+            w = alcanzable(HOMBRO[brazo], w)
             puntos[(15, 16)[brazo]] = w
             puntos[(13, 14)[brazo]] = codo_ik(HOMBRO[brazo], w, POLO_CODO[brazo])
-            ok = visto[brazo] and np.isfinite(forma[brazo]).all()
             lista_manos.append((forma[brazo] + w).round(4).tolist() if ok else None)
         cuadros.append({"cuerpo": np.array([puntos[k] for k in CUERPO_INDICES]).round(4).tolist(),
                         "manos": lista_manos})
@@ -225,12 +319,15 @@ def animaciones_de_glosas(rutas):
             manos_3d = reordenar(z["manos_3d"][a:b], origen)  # mismas manos por brazo que en las features
             datos = (manos, manos_3d, centro, escala, dominante[p] == 0, None if es_iteso else CUADROS_UAEMEX)
             glosa = glosa_de(vocabulario, z["dataset"][i], z["clase"][i])
-            candidatos.setdefault(glosa, []).append((PRIORIDAD[z["dataset"][i]], X, datos, f"{p}/{z['ident'][i]}"))
+            afuera = fuera_del_espacio(manos, centro, escala, dominante[p] == 0)
+            candidatos.setdefault(glosa, []).append((PRIORIDAD[z["dataset"][i]], X, datos, f"{p}/{z['ident'][i]}", afuera))
     glosas = {}
     for glosa, lista in sorted(candidatos.items()):
         mejor = max(c[0] for c in lista)
         lista = [c for c in lista if c[0] == mejor]
-        _, _, datos, origen = lista[medoide(np.stack([c[1] for c in lista]))]
+        menos_afuera = min(c[4] for c in lista)  # las que menos se salen; idealmente ninguna
+        lista = [c for c in lista if c[4] == menos_afuera]
+        _, _, datos, origen, _ = lista[medoide(np.stack([c[1] for c in lista]))]
         glosas[glosa] = {"origen": origen, "cuadros": clip_de_muestra(*datos)}
     return glosas
 

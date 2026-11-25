@@ -39,7 +39,7 @@ const DIGRAFOS = new Set(["LL", "RR", "CH"]);
 const ESPACIO_DELETREO = [0.04, -0.06, 0.28];
 const POLO_CODO = { izq: [0.4, -1, -0.2], der: [-0.4, -1, -0.2] }; // el codo cae hacia abajo y afuera
 
-const COLORES = { piel: 0xd9a27e, ropa: 0x3d5a80, cabello: 0x2b2118, rasgos: 0x2a2226 };
+const COLORES = { piel: 0xd9a27e, ropa: 0x3d5a80, pantalon: 0x2f3237, cabello: 0x2b2118, rasgos: 0x2a2226, ojos: 0xf4f1ec };
 
 // ---------- Vectores como arreglos [x, y, z] ----------
 
@@ -204,24 +204,31 @@ function crearMateriales() {
   return {
     piel: material(COLORES.piel, { roughness: 0.5 }),
     ropa: material(COLORES.ropa, { roughness: 0.85 }),
+    pantalon: material(COLORES.pantalon, { roughness: 0.9 }),
     cabello: material(COLORES.cabello, { roughness: 0.9 }),
     rasgos: material(COLORES.rasgos, { roughness: 0.3 }),
     palma: material(COLORES.piel, { roughness: 0.5, side: THREE.DoubleSide }),
+    ojos: material(COLORES.ojos, { roughness: 0.25 }),
   };
 }
 
-// Torso como sólido de revolución: perfil (radio, altura) de la cadera al cuello, en
-// metros para un ancho de hombros de 0.36 m; luego se aplana de frente a atrás.
-const PERFIL_TORSO = [
-  [0.0, -0.56], [0.13, -0.55], [0.15, -0.5], [0.14, -0.38], [0.135, -0.28], [0.15, -0.16],
+// Torso y pantalón como sólidos de revolución: perfil (radio, altura) en metros para un
+// ancho de hombros de 0.36 m; luego se aplanan de frente a atrás. La camisa se ciñe en la
+// cintura y cae un poco sobre el pantalón, que sigue más abajo de lo que se ve: el
+// encuadre es de intérprete, de la cintura para arriba.
+const perfil = (puntos) => puntos.map(([r, y]) => new THREE.Vector2(r, y));
+const PERFIL_TORSO = perfil([
+  [0.0, -0.5], [0.148, -0.5], [0.15, -0.47], [0.137, -0.36], [0.132, -0.28], [0.148, -0.16],
   [0.165, -0.06], [0.17, 0.0], [0.15, 0.035], [0.09, 0.06], [0.055, 0.07], [0.0, 0.07],
-].map(([r, y]) => new THREE.Vector2(r, y));
+]);
+const PERFIL_PANTALON = perfil([[0.0, -1.0], [0.145, -1.0], [0.145, -0.55], [0.14, -0.46], [0.0, -0.46]]);
 
 const GEOMETRIA = {
   esfera: new THREE.SphereGeometry(1, 32, 20),
   capsula: new THREE.CapsuleGeometry(1, 1, 8, 16),
   cilindro: new THREE.CylinderGeometry(1, 1, 1, 20),
   torso: new THREE.LatheGeometry(PERFIL_TORSO, 48),
+  pantalon: new THREE.LatheGeometry(PERFIL_PANTALON, 48),
   cabello: new THREE.SphereGeometry(1, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.55),
 };
 
@@ -274,9 +281,12 @@ function crearCabeza(escena, materiales) {
     const oreja = malla(cabeza, GEOMETRIA.esfera, materiales.piel);
     oreja.position.set(0.84 * lado, -0.02, -0.02);
     oreja.scale.set(0.12, 0.22, 0.14);
-    const ojo = malla(cabeza, GEOMETRIA.esfera, materiales.rasgos);
-    ojo.position.set(0.3 * lado, 0.08, 0.84);
-    ojo.scale.set(0.09, 0.11, 0.06);
+    const ojo = malla(cabeza, GEOMETRIA.esfera, materiales.ojos);
+    ojo.position.set(0.3 * lado, 0.08, 0.8);
+    ojo.scale.set(0.13, 0.11, 0.08);
+    const iris = malla(cabeza, GEOMETRIA.esfera, materiales.rasgos);
+    iris.position.set(0.3 * lado, 0.07, 0.87);
+    iris.scale.set(0.065, 0.075, 0.03);
     const ceja = malla(cabeza, GEOMETRIA.capsula, materiales.cabello);
     ceja.position.set(0.3 * lado, 0.27, 0.84);
     ceja.rotation.z = Math.PI / 2 + 0.12 * lado;
@@ -299,6 +309,7 @@ function crearMano(escena, materiales) {
   const palma = malla(escena, geometria, materiales.palma);
   return {
     palma,
+    cojin: malla(escena, GEOMETRIA.esfera, materiales.piel),
     huesos: CONEXIONES_MANO.map(() => malla(escena, GEOMETRIA.cilindro, materiales.piel)),
     nudos: Array.from({ length: 21 }, () => malla(escena, GEOMETRIA.esfera, materiales.piel)),
   };
@@ -306,7 +317,7 @@ function crearMano(escena, materiales) {
 
 function actualizarMano(mano, puntos) {
   const visible = Boolean(puntos);
-  for (const m of [mano.palma, ...mano.huesos, ...mano.nudos]) m.visible = visible;
+  for (const m of [mano.palma, mano.cojin, ...mano.huesos, ...mano.nudos]) m.visible = visible;
   if (!visible) return;
   // El grosor sigue al tamaño de la mano: los datos reales no miden 0.09 m de palma exactos.
   const palma = norma(restar(puntos[9], puntos[0]));
@@ -315,6 +326,11 @@ function actualizarMano(mano, puntos) {
     colocarSegmento(mano.huesos[i], puntos[a], puntos[b], palma * (enPalma ? 0.16 : 0.115));
   });
   puntos.forEach((p, i) => colocarEsfera(mano.nudos[i], p, palma * (i === 0 ? 0.2 : PUNTAS.has(i) ? 0.11 : 0.12)));
+  // El cojín de la palma: un elipsoide plano entre la muñeca y los nudillos, con los ejes de la mano.
+  const [x, y, z] = marcoMano(puntos);
+  mano.cojin.position.set(...mezclar(puntos[0], medio(puntos[5], puntos[17]), 0.55));
+  orientarObjeto(mano.cojin, x, y, z);
+  mano.cojin.scale.set(0.55 * norma(restar(puntos[5], puntos[17])), 0.5 * palma, 0.16 * palma);
   const posiciones = mano.palma.geometry.attributes.position;
   PALMA.flat().forEach((indice, k) => posiciones.setXYZ(k, ...puntos[indice]));
   posiciones.needsUpdate = true;
@@ -328,6 +344,7 @@ function crearCuerpo(escena) {
     cabeza: crearCabeza(escena, materiales),
     cuello: malla(escena, GEOMETRIA.cilindro, materiales.piel),
     torso: malla(escena, GEOMETRIA.torso, materiales.ropa),
+    pantalon: malla(escena, GEOMETRIA.pantalon, materiales.pantalon),
     brazos: ["izq", "der"].map(() => ({
       hombro: malla(escena, GEOMETRIA.esfera, materiales.ropa),
       brazo: malla(escena, GEOMETRIA.cilindro, materiales.ropa),
@@ -358,20 +375,23 @@ function actualizarCuerpo(partes, pose, esqueleto) {
 
   const cabeza = actualizarCabeza(partes.cabeza, p);
   const baseCuello = sumar(hombros, [0, 0.05 * k, -0.01]);
-  colocarSegmento(partes.cuello, baseCuello, sumar(cabeza.centro, escalar(cabeza.arriba, -0.75 * cabeza.radio)), 0.045 * k);
+  colocarSegmento(partes.cuello, baseCuello, sumar(cabeza.centro, escalar(cabeza.arriba, -0.6 * cabeza.radio)), 0.055 * k);
 
   const x = unitario(restar(p(11), p(12)));
   const y = perpendicular(restar(hombros, medio(p(23), p(24))), x, [0, 1, 0]);
   partes.torso.position.set(...hombros);
   orientarObjeto(partes.torso, x, y, cruz(x, y));
   partes.torso.scale.set(k, k, k * 0.62);
+  partes.pantalon.position.copy(partes.torso.position);
+  partes.pantalon.quaternion.copy(partes.torso.quaternion);
+  partes.pantalon.scale.copy(partes.torso.scale);
 
   Object.values(esqueleto.brazos).forEach((br, i) => {
     const piezas = partes.brazos[i];
     const [hombro, codo, muneca] = [br.hombro, br.codo, br.muneca].map((j) => pose.cuerpo[j]);
     const hacia = unitario(restar(hombro, hombros));
-    const articulacion = sumar(hombro, escalar(hacia, -0.02 * k)); // un poco adentro: el hombro redondea el torso
-    colocarEsfera(piezas.hombro, sumar(articulacion, [0, -0.01 * k, 0]), 0.058 * k);
+    const articulacion = sumar(hombro, escalar(hacia, -0.03 * k)); // adentro: el hombro redondea el torso
+    colocarEsfera(piezas.hombro, sumar(articulacion, [0, -0.01 * k, 0]), 0.05 * k);
     colocarSegmento(piezas.brazo, articulacion, codo, 0.048 * k);
     colocarEsfera(piezas.codo, codo, 0.046 * k);
     colocarSegmento(piezas.antebrazo, codo, muneca, 0.036 * k);
@@ -379,14 +399,6 @@ function actualizarCuerpo(partes, pose, esqueleto) {
     colocarSegmento(piezas.puno, codo, mezclar(codo, muneca, 0.18), 0.043 * k);
   });
   partes.manos.forEach((mano, m) => actualizarMano(mano, pose.manos[m]));
-}
-
-function crearPiso(escena, y) {
-  const piso = new THREE.Mesh(new THREE.CircleGeometry(0.7, 64), new THREE.ShadowMaterial({ opacity: 0.25 }));
-  piso.rotation.x = -Math.PI / 2;
-  piso.position.y = y;
-  piso.receiveShadow = true;
-  escena.add(piso);
 }
 
 function crearLuces(escena, centro) {
@@ -419,10 +431,11 @@ export function crearAvatar(canvas, datos, eventos) {
   const clips = new Map(Object.entries(datos.glosas).map(([g, glosa]) => [g, prepararClip(glosa, esqueleto, manoGenerica)]));
   const fps = datos.fps;
 
-  const piso = Math.min(...reposo.pose.manos.flatMap((m) => (m ? m.map((q) => q[1]) : [])),
+  // Encuadre: de las manos en reposo a la coronilla; el torso sigue bajo el borde.
+  const abajo = Math.min(...reposo.pose.manos.flatMap((m) => (m ? m.map((q) => q[1]) : [])),
     esqueleto.p(reposo.pose, 16)[1] - 0.2) - 0.03;
-  const cabezaY = esqueleto.p(reposo.pose, 0)[1] + 0.12;
-  const centro = [0, (cabezaY + piso) / 2, 0];
+  const cabezaY = esqueleto.p(reposo.pose, 0)[1] + 0.16;
+  const centro = [0, (cabezaY + abajo) / 2, 0];
 
   const escena = new THREE.Scene();
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -432,14 +445,13 @@ export function crearAvatar(canvas, datos, eventos) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const camara = new THREE.PerspectiveCamera(32, 1, 0.05, 20);
-  const distancia = 1.15 * (cabezaY - piso) / 2 / Math.tan(THREE.MathUtils.degToRad(16));
+  const distancia = 1.08 * (cabezaY - abajo) / 2 / Math.tan(THREE.MathUtils.degToRad(16));
   camara.position.set(0, centro[1] + 0.05, distancia);
   const controles = new OrbitControls(camara, canvas);
   controles.target.set(...centro);
   Object.assign(controles, { enableDamping: true, enablePan: false, minDistance: 0.8, maxDistance: 6 });
 
   crearLuces(escena, centro);
-  crearPiso(escena, piso);
   const partes = crearCuerpo(escena);
 
   new ResizeObserver(() => {
@@ -558,7 +570,7 @@ export function crearAvatar(canvas, datos, eventos) {
       tiempo += dt * velocidad;
       poseVisible = poseEnTiempo();
     }
-    actualizarCuerpo(partes, poseVisible, esqueleto, piso);
+    actualizarCuerpo(partes, poseVisible, esqueleto);
     controles.update();
     renderer.render(escena, camara);
     requestAnimationFrame(cuadro);
