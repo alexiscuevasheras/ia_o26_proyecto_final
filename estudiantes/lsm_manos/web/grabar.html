@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grabar señas</title>
+  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="senas.css">
+  <link rel="stylesheet" href="grabar.css">
+</head>
+<body>
+  <header>
+    <nav aria-label="Páginas de la demo">
+      <a href="index.html">Señas → texto</a> ·
+      <a href="voz.html">Voz → señas</a> ·
+      <a href="grabar.html" aria-current="page">Grabar datos</a>
+    </nav>
+    <h1>Grabar nuestro propio dataset</h1>
+    <p>Para entrenar con las mismas condiciones del uso real (tu cámara, tu luz). <strong>No se
+      guarda video:</strong> solo los puntos del cuerpo y de las manos que calcula MediaPipe, y
+      solo cuando tú descargas el archivo.</p>
+  </header>
+
+  <main>
+    <section class="camara">
+      <div class="marco">
+        <video id="video" playsinline muted></video>
+        <canvas id="puntos"></canvas>
+        <p id="indicacion" class="indicacion"></p>
+      </div>
+      <p id="estado" role="status">Cargando los detectores…</p>
+    </section>
+
+    <section class="resultado">
+      <h2>1. Quién graba</h2>
+      <label for="alias">Alias (no tu nombre: p. ej. «p1»)</label>
+      <input id="alias" type="text" maxlength="12" pattern="[a-z0-9]+" value="p1">
+      <label for="repeticiones">Repeticiones por palabra</label>
+      <input id="repeticiones" type="number" min="1" max="30" value="10">
+
+      <h2>2. Qué palabras</h2>
+      <p class="nota">Por omisión, 50 palabras útiles para conversar. Puedes cambiar la lista.</p>
+      <textarea id="lista" rows="5" aria-label="Glosas a grabar, separadas por espacios"></textarea>
+
+      <h2>3. Grabar</h2>
+      <p class="nota">Manos abajo → haz la seña → manos abajo. La página corta sola cada repetición.</p>
+      <div class="botones">
+        <button id="empezar" disabled>Encender la cámara y empezar</button>
+        <button id="descartar" class="secundario" disabled>Descartar la última</button>
+        <button id="saltar" class="secundario" disabled>Saltar palabra</button>
+      </div>
+      <p id="progreso" class="frase">—</p>
+
+      <h2>4. Guardar</h2>
+      <button id="descargar" disabled>Descargar sesión (.json)</button>
+      <p class="nota">Manda el archivo al equipo; se convierte con
+        <code>python -m lsm.palabras.importar_propios</code>.</p>
+    </section>
+  </main>
+
+  <script type="module" src="grabar.js"></script>
+</body>
+</html>

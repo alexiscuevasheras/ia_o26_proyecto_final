@@ -3,16 +3,13 @@
 // La página se sirve desde la carpeta del proyecto (make demo); los modelos se leen de
 // modelos/, que no se sube a git (el README dice cómo generarlos).
 
-import { FilesetResolver, HandLandmarker, PoseLandmarker } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.3/vision_bundle.mjs";
 import { adaptarSalida } from "./adaptar.js";
-import { asignarManos, TraductorEnVivo } from "./en_vivo.js";
+import { cargarDetectores, cicloDeVideo, encenderCamara, HandLandmarker } from "./camara.js";
+import { TraductorEnVivo } from "./en_vivo.js";
 import { dibujarEscena, pintarMatriz } from "./dibujo.js";
 import { glosasATexto } from "./glosas_a_texto.js";
 
-const WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.2.3/wasm";
 const RUTAS = {
-  manos: "../modelos/hand_landmarker.task",
-  cuerpo: "../modelos/pose_landmarker_full.task",
   palabras: "../modelos/palabras.json",
   letras: "../modelos/pesos.json",
   vocabulario: "vocabulario.json",
@@ -33,30 +30,6 @@ async function cargarJSON(ruta) {
   const r = await fetch(ruta);
   if (!r.ok) throw new Error(`no encontré ${ruta} (ver «Cómo correrlo» en el README)`);
   return r.json();
-}
-
-async function cargarDetectores() {
-  const archivos = await FilesetResolver.forVisionTasks(WASM);
-  const crear = async (Clase, opciones) => {
-    try {
-      return await Clase.createFromOptions(archivos, { ...opciones, baseOptions: { ...opciones.baseOptions, delegate: "GPU" } });
-    } catch {
-      return Clase.createFromOptions(archivos, { ...opciones, baseOptions: { ...opciones.baseOptions, delegate: "CPU" } });
-    }
-  };
-  return Promise.all([
-    crear(HandLandmarker, { baseOptions: { modelAssetPath: RUTAS.manos }, runningMode: "VIDEO", numHands: 2,
-      minHandDetectionConfidence: 0.3, minHandPresenceConfidence: 0.3 }),
-    crear(PoseLandmarker, { baseOptions: { modelAssetPath: RUTAS.cuerpo }, runningMode: "VIDEO",
-      minPoseDetectionConfidence: 0.3, minPosePresenceConfidence: 0.3 }),
-  ]);
-}
-
-/** Resultados de MediaPipe → cuadro { cuerpo, manos } como en el entrenamiento. */
-function cuadroDe(rManos, rCuerpo) {
-  const cuerpo = rCuerpo.landmarks[0]?.map(({ x, y, z, visibility }) => [x, y, z, visibility ?? 1]) ?? null;
-  const manos = rManos.landmarks.map((m) => m.map(({ x, y, z }) => [x, y, z]));
-  return { cuerpo, manos: asignarManos(manos, cuerpo) };
 }
 
 // ---- Pantalla ----
@@ -140,38 +113,20 @@ function mostrarFase() {
 
 // ---- Ciclo de video ----
 
-async function encenderCamara() {
-  video.srcObject = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
-  await video.play();
-  lienzo.width = video.videoWidth;
-  lienzo.height = video.videoHeight;
+function alCuadro(cuadro) {
+  dibujarEscena(lienzo, cuadro, HandLandmarker.HAND_CONNECTIONS, traductor.dominante);
+  const evento = traductor.agregar(cuadro, video.videoWidth / video.videoHeight);
+  if (evento) atenderEvento(evento);
+  mostrarFase();
 }
 
-function iniciarCiclo(detectorManos, detectorCuerpo) {
-  let ultimoTiempo = -1;
-  const cuadro = () => {
-    if (video.currentTime !== ultimoTiempo) { // no repetir el mismo cuadro del video
-      ultimoTiempo = video.currentTime;
-      try {
-        const t = performance.now();
-        // El cuadro va sin espejo, igual que las fotos y videos del entrenamiento; el espejo es solo CSS.
-        const c = cuadroDe(detectorManos.detectForVideo(video, t), detectorCuerpo.detectForVideo(video, t));
-        dibujarEscena(lienzo, c, HandLandmarker.HAND_CONNECTIONS, traductor.dominante);
-        const evento = traductor.agregar(c, video.videoWidth / video.videoHeight);
-        if (evento) atenderEvento(evento);
-        mostrarFase();
-      } catch (error) { // un cuadro con error no debe detener la página
-        estado.textContent = `Error en este cuadro: ${error.message}`;
-        console.error(error);
-      }
-    }
-    requestAnimationFrame(cuadro);
-  };
-  requestAnimationFrame(cuadro);
+function alError(error) {
+  estado.textContent = `Error en este cuadro: ${error.message}`;
+  console.error(error);
 }
 
 async function main() {
-  const [[detectorManos, detectorCuerpo], modelo, letras, vocab] = await Promise.all([
+  const [detectores, modelo, letras, vocab] = await Promise.all([
     cargarDetectores(), cargarJSON(RUTAS.palabras), cargarJSON(RUTAS.letras), cargarJSON(RUTAS.vocabulario),
   ]);
   vocabulario = vocab;
@@ -184,14 +139,14 @@ async function main() {
   boton.addEventListener("click", async () => {
     boton.disabled = true;
     try {
-      await encenderCamara();
+      await encenderCamara(video, lienzo);
     } catch (error) {
       estado.textContent = `No pude abrir la cámara: ${error.message}`;
       boton.disabled = false;
       return;
     }
     estado.textContent = "Manos abajo para empezar; súbelas para señar.";
-    iniciarCiclo(detectorManos, detectorCuerpo);
+    cicloDeVideo(video, detectores, alCuadro, alError);
   });
   $("leer").addEventListener("click", () => {
     const texto = frase();

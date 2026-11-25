@@ -65,9 +65,14 @@ def cortes(z):
 
 
 def personas_de(z):
-    if z["dataset"][0] == "uaemex":
-        return np.array([f"uaemex-{p}" for p in z["persona"]])
-    return np.array([persona_iteso(i) for i in z["ident"]])
+    if z["dataset"][0] == "iteso":
+        return np.array([persona_iteso(i) for i in z["ident"]])
+    return np.array([f"{d}-{p}" for d, p in zip(z["dataset"], z["persona"])])
+
+
+def glosa_de(vocabulario, dataset, clase):
+    """En el dataset propio la clase ya es la glosa."""
+    return clase if dataset == "propio" else vocabulario[(dataset, clase)]["glosa"]
 
 
 def dominancia_por_persona(z, personas, centros=None):
@@ -82,11 +87,11 @@ def dominancia_por_persona(z, personas, centros=None):
 
 
 def centros_por_persona(z, personas):
-    """{persona: centro de hombros en todas sus señas} para UAEMex, donde cada
-    persona se grabó con la cámara fija; sirve de respaldo a las señas en que
-    no hubo ningún cuadro con hombros plausibles. En ITESO (teléfono en mano)
-    no aplica y se devuelve {}."""
-    if z["dataset"][0] != "uaemex":
+    """{persona: centro de hombros en todas sus señas} para UAEMex y el dataset
+    propio, donde cada persona se grabó con la cámara fija; sirve de respaldo a
+    las señas en que no hubo ningún cuadro con hombros plausibles. En ITESO
+    (teléfono en mano) no aplica y se devuelve {}."""
+    if z["dataset"][0] == "iteso":
         return {}
     centros = {}
     todos = cortes(z)
@@ -112,7 +117,7 @@ def cargar(rutas, t=T):
         dominante = dominancia_por_persona(z, personas, respaldo)
         X = np.stack([secuencia(z["cuerpo"][a:b], z["manos"][a:b], float(z["aspecto"][i]), dominante[personas[i]], t,
                                 respaldo.get(personas[i])) for i, (a, b) in enumerate(cortes(z))])
-        glosas = np.array([vocabulario[(d, c)]["glosa"] for d, c in zip(z["dataset"], z["clase"])])
+        glosas = np.array([glosa_de(vocabulario, d, c) for d, c in zip(z["dataset"], z["clase"])])
         partes.append(Secuencias(X, glosas, personas, z["dataset"], z["ident"]))
     return Secuencias(*(np.concatenate([getattr(p, c) for p in partes])
                         for c in ("X", "glosa", "persona", "dataset", "ident")))

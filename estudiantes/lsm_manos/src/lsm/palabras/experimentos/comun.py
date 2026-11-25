@@ -21,7 +21,9 @@ def preparar(rutas, t=T):
 
 
 def personas_de_validacion(datos):
-    return sorted({p for p in datos.persona if p.startswith("uaemex-")})
+    """Las de UAEMex (sin las de prueba) y las del dataset propio. Las de ITESO
+    solo entrenan: no se sabe con certeza quién es quién."""
+    return sorted({p for p in datos.persona if not p.startswith("iteso-")})
 
 
 def top_k(P, y, k):
@@ -55,10 +57,10 @@ def _pliegue(tarea):
 
 
 def dejando_una_persona_fuera(fabrica, datos, X, y, K, procesos=6):
-    """Entrena sin cada persona de validación y evalúa en sus señas de UAEMex.
+    """Entrena sin cada persona de validación y evalúa en sus señas.
     Devuelve ({persona: métricas}, {persona: (P, y)})."""
     validacion = personas_de_validacion(datos)
-    mascaras = [(datos.persona == p) & (datos.dataset == "uaemex") for p in validacion]
+    mascaras = [datos.persona == p for p in validacion]
     with ProcessPoolExecutor(procesos) as ejecutor:
         probabilidades = list(ejecutor.map(_pliegue, [(fabrica, X, y, m, K) for m in mascaras]))
     salidas = {p: (P, y[m]) for p, P, m in zip(validacion, probabilidades, mascaras)}

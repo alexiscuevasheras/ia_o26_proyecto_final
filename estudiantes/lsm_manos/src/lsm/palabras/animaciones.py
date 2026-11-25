@@ -4,7 +4,7 @@ Por glosa se elige el medoide: la repetición cuya secuencia de features
 está, en promedio, más cerca de las demás de esa glosa. No se promedian
 repeticiones porque el promedio de dos movimientos emborrona los dos. Se
 prefiere ITESO (video continuo a 15 fps) sobre UAEMex (~14 fotos sueltas
-por seña), y solo se eligen repeticiones donde casi siempre se vio el cuerpo.
+por seña) y ambos sobre el dataset propio, y solo se eligen repeticiones donde casi siempre se vio el cuerpo.
 
 Coordenadas: las «world» de MediaPipe (metros, x a la derecha de la imagen,
 y hacia abajo, z alejándose de la cámara). En una cámara sin espejo la
@@ -27,7 +27,8 @@ import numpy as np
 from ..datos import LETRAS_ESTATICAS
 from ..entrenar import cargar_landmarks
 from ..features import normalizar
-from .conjunto import centros_por_persona, cortes, dominancia_por_persona, leer_secuencias, leer_vocabulario, personas_de
+from .conjunto import (centros_por_persona, cortes, dominancia_por_persona, glosa_de, leer_secuencias,
+                       leer_vocabulario, personas_de)
 from .secuencias import preparar_sena, reordenar, secuencia
 
 FPS = 15
@@ -38,6 +39,9 @@ CUADROS_UAEMEX = 18  # sus ~14 fotos no tienen tiempo real; 18 cuadros a 15 fps 
 MINIMO_CUERPO = 0.8
 LETRAS_CON_MOVIMIENTO = ["J", "K", "Ñ", "Q", "X", "Z"]
 EJES = np.array([1.0, -1.0, -1.0])
+# Video continuo de señantes primero; el dataset propio (estudiantes que aprenden LSM)
+# solo para glosas que no estén en los otros.
+PRIORIDAD = {"iteso": 2, "uaemex": 1, "propio": 0}
 
 
 def interpolar_faltantes(a):
@@ -110,13 +114,13 @@ def animaciones_de_glosas(rutas):
             cuerpo_visto = np.isfinite(z["cuerpo_3d"][a:b, 11, 0]).mean()
             if cuerpo_visto < MINIMO_CUERPO:
                 continue
-            glosa = vocabulario[(z["dataset"][i], z["clase"][i])]["glosa"]
+            glosa = glosa_de(vocabulario, z["dataset"][i], z["clase"][i])
             centro = respaldo.get(personas[i])
             X = secuencia(z["cuerpo"][a:b], z["manos"][a:b], float(z["aspecto"][i]), dominante[personas[i]], 16, centro)
             *_, origen = preparar_sena(z["cuerpo"][a:b], z["manos"][a:b], float(z["aspecto"][i]), centro)
             manos_3d = reordenar(z["manos_3d"][a:b], origen)  # mismas manos por brazo que en las features
             candidatos.setdefault(glosa, []).append(
-                (int(es_iteso), X, (z["cuerpo_3d"][a:b], manos_3d, None if es_iteso else CUADROS_UAEMEX),
+                (PRIORIDAD[z["dataset"][i]], X, (z["cuerpo_3d"][a:b], manos_3d, None if es_iteso else CUADROS_UAEMEX),
                  f"{personas[i]}/{z['ident'][i]}"))
     glosas = {}
     for glosa, lista in sorted(candidatos.items()):

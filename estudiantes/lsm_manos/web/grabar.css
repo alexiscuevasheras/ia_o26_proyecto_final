@@ -1,0 +1,31 @@
+/* Página de grabación. Usa los colores de estilos.css. */
+
+.indicacion {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  margin: 0;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.indicacion:empty { display: none; }
+.indicacion[data-fase="activa"] { background: color-mix(in srgb, var(--acento) 85%, transparent); }
+
+.resultado input, .resultado textarea {
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--tinta);
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+}
+
+.resultado label { display: block; margin-top: 8px; font-size: 0.9rem; color: var(--suave); }

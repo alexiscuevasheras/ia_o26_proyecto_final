@@ -26,12 +26,14 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("uaemex", type=Path)
     ap.add_argument("--iteso", type=Path)
+    ap.add_argument("--propios", type=Path, help="datos/secuencias_propias.npz")
     ap.add_argument("--modelos", nargs="+", default=list(MODELOS))
     ap.add_argument("--salida", type=Path, default=Path("resultados/p1_palabras.json"))
     ap.add_argument("--procesos", type=int, default=6)
     args = ap.parse_args()
 
-    datos, y, glosas, prueba = preparar([args.uaemex] + ([args.iteso] if args.iteso else []))
+    rutas = [args.uaemex] + [r for r in (args.iteso, args.propios) if r]
+    datos, y, glosas, prueba = preparar(rutas)
     K = len(glosas)
     print(f"{len(datos)} secuencias, {K} glosas, prueba sin tocar: {prueba}", flush=True)
 
@@ -43,7 +45,7 @@ def main():
 
     salida = {
         "experimento": "P1 reconocimiento de palabras aisladas, dejando una persona fuera",
-        "datos": {"uaemex": str(args.uaemex), "iteso": str(args.iteso) if args.iteso else None,
+        "datos": {"archivos": [str(r) for r in rutas],
                   "secuencias": len(datos), "glosas": K, "personas_validacion": personas_de_validacion(datos),
                   "personas_prueba_sin_tocar": prueba},
         "modelos": resultados,
