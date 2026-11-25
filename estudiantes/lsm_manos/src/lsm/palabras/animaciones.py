@@ -36,7 +36,8 @@ CUERPO_INDICES = [0, 2, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 23, 24]
 MUNECAS = (15, 16)
 PALMA_METROS = 0.09
 CUADROS_UAEMEX = 18  # sus ~14 fotos no tienen tiempo real; 18 cuadros a 15 fps ≈ 1.2 s
-MINIMO_CUERPO = 0.8
+MINIMO_CUERPO = 0.4  # fracción de cuadros con hombros plausibles (con 0.8 quedaban 59 glosas)
+HOMBROS_3D = (0.25, 0.5)  # metros: un ancho de hombros real; fuera de eso el cuerpo está mal detectado
 LETRAS_CON_MOVIMIENTO = ["J", "K", "Ñ", "Q", "X", "Z"]
 EJES = np.array([1.0, -1.0, -1.0])
 # Video continuo de señantes primero; el dataset propio (estudiantes que aprenden LSM)
@@ -72,8 +73,16 @@ def remuestrear_en_tiempo(a, n):
     return np.stack([np.interp(nuevo, t, plano[:, j]) for j in range(plano.shape[1])], 1).reshape((n,) + a.shape[1:])
 
 
+def cuerpo_plausible(cuerpo_3d):
+    """Cuadros cuyo ancho de hombros 3D es el de una persona real."""
+    ancho = np.linalg.norm(cuerpo_3d[:, 11] - cuerpo_3d[:, 12], axis=1)
+    return np.isfinite(ancho) & (ancho >= HOMBROS_3D[0]) & (ancho <= HOMBROS_3D[1])
+
+
 def clip_de_muestra(cuerpo_3d, manos_3d, n_cuadros=None):
-    """Lista de cuadros {cuerpo, manos} en el sistema del avatar."""
+    """Lista de cuadros {cuerpo, manos} en el sistema del avatar. Los cuadros con
+    el cuerpo mal detectado se descartan y se rellenan por interpolación."""
+    cuerpo_3d = np.where(cuerpo_plausible(cuerpo_3d)[:, None, None], cuerpo_3d, np.nan)
     cuerpo = suavizar(interpolar_faltantes(cuerpo_3d)) * EJES
     cuerpo -= cuerpo[:, [11, 12]].mean(axis=1, keepdims=True)
     presente = ~np.isnan(manos_3d[:, :, 0, 0])
@@ -111,8 +120,7 @@ def animaciones_de_glosas(rutas):
         dominante = dominancia_por_persona(z, personas, respaldo)
         es_iteso = z["dataset"][0] == "iteso"
         for i, (a, b) in enumerate(cortes(z)):
-            cuerpo_visto = np.isfinite(z["cuerpo_3d"][a:b, 11, 0]).mean()
-            if cuerpo_visto < MINIMO_CUERPO:
+            if cuerpo_plausible(z["cuerpo_3d"][a:b]).mean() < MINIMO_CUERPO:
                 continue
             glosa = glosa_de(vocabulario, z["dataset"][i], z["clase"][i])
             centro = respaldo.get(personas[i])
