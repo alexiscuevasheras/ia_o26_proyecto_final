@@ -3,8 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Alfabeto LSM</title>
+  <title>Señas a texto</title>
   <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="senas.css">
 </head>
 <body>
   <header>
@@ -12,9 +13,10 @@
       <a href="index.html" aria-current="page">Señas → texto</a> ·
       <a href="voz.html">Voz → señas</a>
     </nav>
-    <h1>Alfabeto manual de la LSM</h1>
-    <p>Una red neuronal escrita desde cero en NumPy reconoce 21 letras estáticas a partir de los
-      21 puntos de la mano. Todo corre en tu navegador: el video no sale de tu computadora.</p>
+    <h1>De la LSM al español, en vivo</h1>
+    <p>Haz una seña con las manos abajo antes y después. Una red recurrente escrita desde cero
+      reconoce las palabras de su vocabulario; si te quedas quieto con una letra, la deletrea.
+      Todo corre en tu navegador: el video no sale de tu computadora.</p>
   </header>
 
   <main>
@@ -22,29 +24,46 @@
       <div class="marco">
         <video id="video" playsinline muted></video>
         <canvas id="puntos"></canvas>
+        <p id="subtitulo" class="subtitulo" aria-hidden="true"></p>
       </div>
       <button id="iniciar">Encender la cámara</button>
-      <p id="estado" role="status">Carga los pesos y el detector de manos…</p>
+      <p id="estado" role="status">Cargando la red y los detectores…</p>
     </section>
 
     <section class="resultado">
-      <h2>Letras más probables</h2>
-      <ol id="mejores" aria-live="polite"></ol>
+      <h2>Ahora: <span id="fase" class="fase">en reposo</span></h2>
+      <ol id="mejores" class="mejores" aria-label="Opciones de la última seña"></ol>
 
-      <h2>Lo que ve la red</h2>
-      <p class="nota">La mano después de las features: espejada si es izquierda, centrada en la
-        muñeca y escalada por la palma. Esto (sin la muñeca) es la entrada a(0).</p>
-      <canvas id="normalizada" width="240" height="240"></canvas>
+      <h2>Lo que entendí</h2>
+      <p class="nota">Toca una palabra para corregirla: la red aprende de tus correcciones.</p>
+      <ol id="reconocidas" class="reconocidas" aria-live="polite"></ol>
+
+      <h2>En español</h2>
+      <p id="frase" class="frase">—</p>
+      <p class="nota">Lectura palabra por palabra: la LSM tiene su propia gramática y esto no
+        la traduce completa.</p>
+      <div class="botones">
+        <button id="leer">Leer en voz alta</button>
+        <button id="borrar" class="secundario">Borrar</button>
+      </div>
+
+      <h2>Adaptación</h2>
+      <p id="adaptacion" class="nota">La red todavía no ha aprendido de ti.</p>
+      <button id="olvidar" class="secundario" disabled>Olvidar lo aprendido</button>
     </section>
 
     <section class="activaciones">
-      <h2>Activaciones capa por capa</h2>
-      <p class="nota">Cada cuadro es una neurona; más claro, activación más alta dentro de su capa.
-        a(l) = g(W(l) a(l−1) + b(l)).</p>
-      <div id="capas"></div>
+      <h2>La red por dentro</h2>
+      <p class="nota">Arriba, la entrada de la última seña: 16 momentos × 126 números (por mano,
+        posición de la muñeca y forma). Abajo, el estado oculto h<sub>t</sub> de la GRU en cada
+        momento. Cada columna es un momento; más claro, valor más alto.</p>
+      <h3>Entrada x<sub>1</sub>…x<sub>16</sub></h3>
+      <canvas id="entrada" class="matriz"></canvas>
+      <h3>Estados h<sub>1</sub>…h<sub>16</sub></h3>
+      <canvas id="estados" class="matriz"></canvas>
     </section>
   </main>
 
-  <script type="module" src="demo.js"></script>
+  <script type="module" src="senas.js"></script>
 </body>
 </html>

@@ -70,8 +70,8 @@ export class TraductorEnVivo {
    * cuadro: { cuerpo: 33 [x, y, z, vis] o null, manos: [m0, m1] } ya asignado.
    * Devuelve un evento o null:
    *   { tipo: "letra", letra, probabilidad }
-   *   { tipo: "glosa", glosa, probabilidad, opciones, resumen }
-   *   { tipo: "no_se", opciones, resumen }
+   *   { tipo: "glosa", glosa, probabilidad, opciones, resumen, x, estados }
+   *   { tipo: "no_se", opciones, resumen, x, estados }
    */
   agregar(cuadro, aspecto) {
     this.recientes = [...this.recientes, cuadro].slice(-CUADROS_DEL_MARCO);
@@ -118,9 +118,10 @@ export class TraductorEnVivo {
     this.votosDominancia[manoQueMasSeMueve(sena)] += 1;
     if (this.letrasDeLaSena.length) return null; // fue deletreo: las letras ya salieron
     const x = secuencia(sena, aspecto, this.dominante);
-    const { probabilidades, resumen } = adelanteGRU(this.modelo, x);
+    const { probabilidades, resumen, estados } = adelanteGRU(this.modelo, x);
     const opciones = mejoresGlosas(this.modelo, probabilidades, 3);
-    if (opciones[0].probabilidad < this.umbral) return { tipo: "no_se", opciones, resumen };
-    return { tipo: "glosa", glosa: opciones[0].glosa, probabilidad: opciones[0].probabilidad, opciones, resumen };
+    const comun = { opciones, resumen, x, estados };
+    if (opciones[0].probabilidad < this.umbral) return { tipo: "no_se", ...comun };
+    return { tipo: "glosa", glosa: opciones[0].glosa, probabilidad: opciones[0].probabilidad, ...comun };
   }
 }

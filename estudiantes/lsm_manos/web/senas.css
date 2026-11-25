@@ -1,0 +1,66 @@
+/* Página señas → texto. Usa los colores de estilos.css. */
+
+.subtitulo {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 1.3rem;
+  text-align: center;
+}
+
+.subtitulo:empty { display: none; }
+
+.fase {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--borde);
+  font-weight: 600;
+}
+
+.fase[data-fase="activa"] { background: var(--acento); color: #fff; }
+
+.mejores, .reconocidas { list-style: none; padding: 0; margin: 0; }
+
+.opcion {
+  display: grid;
+  grid-template-columns: minmax(0, 10ch) 1fr 5ch;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+  margin: 0 0 6px;
+  background: var(--fondo);
+  color: var(--tinta);
+  border: 1px solid var(--borde);
+  text-align: left;
+}
+
+.reconocidas { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.ficha { margin: 0; padding: 4px 10px; font-weight: 600; }
+.ficha.letra { background: var(--borde); color: var(--tinta); opacity: 1; }
+.ficha.no_se { background: #c98a00; }
+
+.frase { font-size: 1.4rem; margin: 0 0 4px; }
+
+.botones { display: flex; gap: 8px; flex-wrap: wrap; }
+.botones button { margin-top: 0; }
+
+button.secundario { background: var(--borde); color: var(--tinta); }
+
+.activaciones h3 { font-size: 0.85rem; font-weight: 600; margin: 12px 0 4px; color: var(--suave); }
+
+.matriz {
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  image-rendering: pixelated;
+  border-radius: 4px;
+  background: var(--borde);
+}
