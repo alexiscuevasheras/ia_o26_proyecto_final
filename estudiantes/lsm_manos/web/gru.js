@@ -42,12 +42,14 @@ export function adelanteGRU(modelo, x) {
   }
   const promedio = h.map((_, i) => estados.reduce((s, e) => s + e[i], 0) / estados.length);
   const resumen = [...h, ...promedio];
-  return { probabilidades: salida(p.V, p.c, resumen), estados, resumen };
+  // La temperatura τ (calibrada en el experimento P5) solo suaviza la confianza
+  // que se muestra; no cambia cuál glosa gana.
+  return { probabilidades: salida(p.V, p.c, resumen, modelo.temperatura ?? 1), estados, resumen };
 }
 
-/** ŷ = softmax(V resumen + c). */
-export function salida(V, c, resumen) {
-  return softmax(matVec(V, resumen).map((v, k) => v + c[k]));
+/** ŷ = softmax((V resumen + c) / τ). */
+export function salida(V, c, resumen, tau = 1) {
+  return softmax(matVec(V, resumen).map((v, k) => (v + c[k]) / tau));
 }
 
 /** Las k glosas más probables: [{ glosa, probabilidad }]. */

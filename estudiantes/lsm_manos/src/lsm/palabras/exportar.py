@@ -34,6 +34,14 @@ def modelo_a_json(red, estandar, glosas):
     }
 
 
+def calibracion(ruta_p5):
+    """Temperatura y umbral del «no sé» elegidos en P5, o (1, None) sin ese archivo."""
+    if ruta_p5 is None or not Path(ruta_p5).exists():
+        return 1.0, None
+    p5 = json.loads(Path(ruta_p5).read_text())
+    return p5["temperatura_final"], p5["umbral_elegido"]["umbral"]
+
+
 def entrenar_final(rutas):
     datos = cargar(rutas)
     datos = datos.filtrar(~np.isin(datos.persona, list(personas_de_prueba(datos.persona))))
@@ -110,12 +118,16 @@ def main():
     m.add_argument("salida", type=Path)
     m.add_argument("--uaemex", type=Path, required=True)
     m.add_argument("--iteso", type=Path)
+    m.add_argument("--propios", type=Path)
+    m.add_argument("--no-se", type=Path, default=Path("resultados/p5_no_se.json"),
+                   help="resultados de P5: temperatura y umbral del «no sé»")
     p = sub.add_parser("paridad")
     p.add_argument("salida", type=Path)
     args = ap.parse_args()
 
     if args.que == "modelo":
-        datos = entrenar_final([args.uaemex] + ([args.iteso] if args.iteso else []))
+        datos = entrenar_final([args.uaemex] + [r for r in (args.iteso, args.propios) if r])
+        datos["temperatura"], datos["umbral"] = calibracion(args.no_se)
     else:
         datos = generar_paridad()
     args.salida.parent.mkdir(parents=True, exist_ok=True)

@@ -55,9 +55,14 @@ Python (`lsm.palabras.animaciones`) elige, para cada glosa, la repetición más 
   "T": 16, "D": 126,
   "glosas": ["ABRAZAR", ...],
   "params": {"W_z": [[...]], "U_z": [[...]], "b_z": [...], ..., "V": [[...]], "c": [...]},
+  "estandar": {"media": [...D], "desv": [...D]},
+  "temperatura": 1.7,
+  "umbral": 0.35,
   "features": {"version": 1}
 }
 ```
+
+`estandar` normaliza cada una de las D columnas con la media y la desviación del entrenamiento. `temperatura` (τ) y `umbral` salen de `resultados/p5_no_se.json`: ŷ = softmax(z/τ), y la página dice «no sé» si max ŷ < umbral. Los números del ejemplo son ilustrativos.
 
 La entrada es la de `lsm/palabras/secuencias.py`. `web/secuencias.js` la reproduce y una prueba de paridad compara las dos.
 

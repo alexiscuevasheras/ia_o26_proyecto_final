@@ -15,7 +15,7 @@ import { Segmentador } from "./segmentador.js";
 
 const MUNECA_IZQ = 15;
 const MUNECA_DER = 16;
-export const UMBRAL_NO_SE = 0.5; // se recalibra con el experimento del «no sé»
+export const UMBRAL_NO_SE = 0.5; // si palabras.json no trae el umbral elegido en el experimento P5
 const LETRA_QUIETA = 0.03; // anchos de hombro por cuadro
 const LETRA_CUADROS = 8;
 const LETRA_PROBABILIDAD = 0.8;
@@ -42,7 +42,7 @@ export function asignarManos(manosDetectadas, cuerpo) {
 
 export class TraductorEnVivo {
   /** modeloPalabras: palabras.json; redLetras: pesos.json (o null para solo palabras). */
-  constructor(modeloPalabras, redLetras, { umbral = UMBRAL_NO_SE } = {}) {
+  constructor(modeloPalabras, redLetras, { umbral = modeloPalabras.umbral ?? UMBRAL_NO_SE } = {}) {
     this.modelo = modeloPalabras;
     this.letras = redLetras;
     this.umbral = umbral;
