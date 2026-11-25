@@ -1,0 +1,315 @@
+{
+  "experimento": "P5 «no sé»: cobertura contra exactitud, calibración y señas desconocidas",
+  "datos": [
+    "datos/secuencias_uaemex.npz",
+    "datos/secuencias_iteso.npz"
+  ],
+  "sin_calibrar": {
+    "ece": 0.45053758307729885,
+    "curva": [
+      {
+        "umbral": 0.0,
+        "cobertura": 1.0,
+        "exactitud": 0.09417652411282984
+      },
+      {
+        "umbral": 0.05,
+        "cobertura": 1.0,
+        "exactitud": 0.09417652411282984
+      },
+      {
+        "umbral": 0.1,
+        "cobertura": 1.0,
+        "exactitud": 0.09417652411282984
+      },
+      {
+        "umbral": 0.15,
+        "cobertura": 0.9954504094631483,
+        "exactitud": 0.09414990859232175
+      },
+      {
+        "umbral": 0.2,
+        "cobertura": 0.9608735213830755,
+        "exactitud": 0.09611742424242424
+      },
+      {
+        "umbral": 0.25,
+        "cobertura": 0.9071883530482256,
+        "exactitud": 0.09979939819458375
+      },
+      {
+        "umbral": 0.3,
+        "cobertura": 0.827115559599636,
+        "exactitud": 0.10506050605060506
+      },
+      {
+        "umbral": 0.35,
+        "cobertura": 0.7484076433121019,
+        "exactitud": 0.10820668693009118
+      },
+      {
+        "umbral": 0.4,
+        "cobertura": 0.6747042766151047,
+        "exactitud": 0.1112609575185435
+      },
+      {
+        "umbral": 0.45,
+        "cobertura": 0.594631483166515,
+        "exactitud": 0.11553175210405509
+      },
+      {
+        "umbral": 0.5,
+        "cobertura": 0.5200181983621474,
+        "exactitud": 0.12073490813648294
+      },
+      {
+        "umbral": 0.55,
+        "cobertura": 0.451319381255687,
+        "exactitud": 0.13004032258064516
+      },
+      {
+        "umbral": 0.6,
+        "cobertura": 0.3853503184713376,
+        "exactitud": 0.1381345926800472
+      },
+      {
+        "umbral": 0.65,
+        "cobertura": 0.3321201091901729,
+        "exactitud": 0.14657534246575343
+      },
+      {
+        "umbral": 0.7,
+        "cobertura": 0.2775250227479527,
+        "exactitud": 0.16393442622950818
+      },
+      {
+        "umbral": 0.75,
+        "cobertura": 0.23475887170154686,
+        "exactitud": 0.17635658914728683
+      },
+      {
+        "umbral": 0.8,
+        "cobertura": 0.19381255686988172,
+        "exactitud": 0.18779342723004694
+      },
+      {
+        "umbral": 0.85,
+        "cobertura": 0.1410373066424022,
+        "exactitud": 0.2064516129032258
+      },
+      {
+        "umbral": 0.9,
+        "cobertura": 0.09736123748862602,
+        "exactitud": 0.2383177570093458
+      },
+      {
+        "umbral": 0.95,
+        "cobertura": 0.05232029117379436,
+        "exactitud": 0.30434782608695654
+      }
+    ],
+    "umbral_objetivo": null,
+    "umbral_exactitud_por_cobertura": {
+      "umbral": 0.0,
+      "cobertura": 1.0,
+      "exactitud": 0.09417652411282984
+    }
+  },
+  "calibrado": {
+    "ece": 0.015516707791321284,
+    "curva": [
+      {
+        "umbral": 0.0,
+        "cobertura": 1.0,
+        "exactitud": 0.09417652411282984
+      },
+      {
+        "umbral": 0.05,
+        "cobertura": 0.7434030937215651,
+        "exactitud": 0.11138310893512852
+      },
+      {
+        "umbral": 0.1,
+        "cobertura": 0.20746132848043677,
+        "exactitud": 0.19956140350877194
+      },
+      {
+        "umbral": 0.15,
+        "cobertura": 0.07097361237488627,
+        "exactitud": 0.26282051282051283
+      },
+      {
+        "umbral": 0.2,
+        "cobertura": 0.0272975432211101,
+        "exactitud": 0.4
+      },
+      {
+        "umbral": 0.25,
+        "cobertura": 0.011373976342129208,
+        "exactitud": 0.48
+      },
+      {
+        "umbral": 0.3,
+        "cobertura": 0.005914467697907188,
+        "exactitud": 0.38461538461538464
+      },
+      {
+        "umbral": 0.35,
+        "cobertura": 0.001364877161055505,
+        "exactitud": 0.3333333333333333
+      },
+      {
+        "umbral": 0.4,
+        "cobertura": 0.001364877161055505,
+        "exactitud": 0.3333333333333333
+      },
+      {
+        "umbral": 0.45,
+        "cobertura": 0.0,
+        "exactitud": null
+      },
+      {
+        "umbral": 0.5,
+        "cobertura": 0.0,
+        "exactitud": null
+      },
+      {
+        "umbral": 0.55,
+        "cobertura": 0.0,
+        "exactitud": null
+      },
+      {
+        "umbral": 0.6,
+        "cobertura": 0.0,
+        "exactitud": null
+      },
+      {
+        "umbral": 0.65,
+        "cobertura": 0.0,
+        "exactitud": null
+      },
+      {
+        "umbral": 0.7,
+        "cobertura": 0.0,
+        "exactitud": null
+      },
+      {
+        "umbral": 0.75,
+        "cobertura": 0.0,
+        "exactitud": null
+      },
+      {
+        "umbral": 0.8,
+        "cobertura": 0.0,
+        "exactitud": null
+      },
+      {
+        "umbral": 0.85,
+        "cobertura": 0.0,
+        "exactitud": null
+      },
+      {
+        "umbral": 0.9,
+        "cobertura": 0.0,
+        "exactitud": null
+      },
+      {
+        "umbral": 0.95,
+        "cobertura": 0.0,
+        "exactitud": null
+      }
+    ],
+    "umbral_objetivo": null,
+    "umbral_exactitud_por_cobertura": {
+      "umbral": 0.0,
+      "cobertura": 1.0,
+      "exactitud": 0.09417652411282984
+    },
+    "temperatura_por_persona": {
+      "uaemex-01": 3.3145512480634927,
+      "uaemex-02": 3.125458391995726,
+      "uaemex-03": 3.3145512480634927,
+      "uaemex-04": 3.3145512480634927,
+      "uaemex-05": 3.3145512480634927,
+      "uaemex-06": 3.3145512480634927,
+      "uaemex-07": 2.9471531525734274,
+      "uaemex-08": 3.3145512480634927,
+      "uaemex-09": 3.3145512480634927
+    }
+  },
+  "temperatura_final": 3.125458391995726,
+  "umbral_elegido": {
+    "umbral": 0.0,
+    "cobertura": 1.0,
+    "exactitud": 0.09417652411282984
+  },
+  "criterio": "menor umbral con exactitud de lo respondido >= 0.9; si ninguno, el que maximiza exactitud × cobertura (curva calibrada)",
+  "senas_desconocidas": {
+    "glosas_desconocidas": [
+      "ABRAZAR",
+      "ABRIL",
+      "ABRIR",
+      "ABUELA",
+      "ACTOR",
+      "ADULTO",
+      "AEROPUERTO",
+      "AGOSTO",
+      "APRENDER",
+      "ARREGLAR",
+      "AUTOBUS",
+      "BANDERA",
+      "BICICLETA",
+      "BLUSA",
+      "CAFETERIA",
+      "CAMIONETA",
+      "CANSADO",
+      "CHIHUAHUA",
+      "CORRER",
+      "CUCHILLO",
+      "CUNA",
+      "DERECHA",
+      "DOCTOR",
+      "DURANGO",
+      "ELLOS",
+      "ENERO",
+      "ESCUCHAR",
+      "EXAMEN",
+      "FEBRERO",
+      "FEO",
+      "GOMA",
+      "GORDO",
+      "GRACIAS",
+      "HERMANO",
+      "JUNIO",
+      "LEER",
+      "MAMA",
+      "MARTES",
+      "MENTIR",
+      "METRO",
+      "MORELOS",
+      "MOTO",
+      "MUJER",
+      "NOS-VEMOS",
+      "OJOS",
+      "PANTALON",
+      "PAPA",
+      "PLATO",
+      "POR-FAVOR",
+      "PUEBLA",
+      "QUINTANA-ROO",
+      "SACAPUNTAS",
+      "SUPERMERCADO",
+      "VESTIDO",
+      "VIERNES",
+      "ZACATECAS"
+    ],
+    "auroc_conocidas_vs_desconocidas": 0.5209893692963671,
+    "umbral": 0.0,
+    "rechazo_desconocidas": 0.0,
+    "rechazo_conocidas": 0.0
+  },
+  "entorno": {
+    "python": "3.14.5",
+    "numpy": "2.5.5"
+  }
+}

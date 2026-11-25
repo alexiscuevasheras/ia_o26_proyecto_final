@@ -91,12 +91,13 @@ elegir nada.
   | Experimento | Qué mide | Resultado (top-1) |
   |---|---|---|
   | P1, UAEMex | persona nueva, 249 glosas | GRU 0.107 ± 0.045 (top-5 0.266); logística 0.093, SVM 0.084, red densa 0.080, kNN 0.054 |
-  | P1, + ITESO al entrenar | persona nueva de UAEMex, 280 glosas | GRU 0.091; no ayuda |
+  | P1, + ITESO al entrenar | persona nueva de UAEMex, 280 glosas | GRU 0.094; no ayuda |
   | P2 | qué parte importa (GRU) | sin la forma de la mano 0.040; solo la mano dominante 0.078; sin la posición 0.100; sin aumento 0.105 |
-  | P3 | de un dataset al otro, 11 glosas compartidas (azar 0.091) | UAEMex → ITESO 0.295; ITESO → UAEMex 0.162 |
+  | P3 | de un dataset al otro, 11 glosas compartidas (azar 0.091) | UAEMex → ITESO 0.296; ITESO → UAEMex 0.182 |
   | P4 | adaptación con k ejemplos | pendiente: necesita el dataset propio (ver abajo) |
   | P5 | calibración y «no sé» | ECE de 0.389 a 0.018 con temperatura 2.95; AUROC conocidas/desconocidas 0.537 (casi azar) |
-  | P6 | diagnóstico con personas conocidas (división al azar) | UAEMex 0.090; ITESO 0.970; ITESO con 7 ejemplos por glosa 0.892 |
+  | P5, + ITESO al entrenar | calibración del modelo de la página | ECE de 0.451 a 0.016 con temperatura 3.13; AUROC 0.521 |
+  | P6 | diagnóstico con personas conocidas (división al azar) | UAEMex 0.090; ITESO 0.984; ITESO con 7 ejemplos por glosa 0.876 |
 
   **Qué dicen juntos.** P6 no mide generalización: las mismas personas están en entrenamiento
   y en evaluación. Sirve para ubicar el error. En ITESO la GRU acierta casi todo, incluso con

@@ -260,13 +260,13 @@ posibles y cada una pide un remedio distinto:
 | pocos ejemplos por glosa | acierto alto en ITESO completo, bajo con pocos | más datos |
 | la calidad de los datos | acierto bajo aun con personas conocidas | otros datos o mejor extracción |
 
-Resultado: UAEMex 0.090 con personas conocidas (igual que con nuevas); ITESO 0.970, y 0.892
+Resultado: UAEMex 0.090 con personas conocidas (igual que con nuevas); ITESO 0.984, y 0.876
 con solo 7 ejemplos por glosa. Lo que más pesa en UAEMex es la calidad de los datos (MediaPipe no
 ve mano en el 27 % de los cuadros), aunque P6 no separa del todo el número de glosas (249 contra
 42) ni que en ITESO la misma persona repite cada seña.
 
 Moraleja: antes de cambiar la red, mide dónde está el error. Un 10 % podía leerse como «la GRU es
-mala»; P6 muestra que con buenos datos la misma GRU llega a 97 %.
+mala»; P6 muestra que con buenos datos la misma GRU llega a 98 %.
 
 ### Tres preguntas (contestar sin ver el código)
 

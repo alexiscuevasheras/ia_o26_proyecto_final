@@ -15,15 +15,15 @@
   ],
   "resultados": {
     "uaemex_a_iteso": {
-      "secuencias_evaluadas": 559,
-      "top1_vocabulario_completo": 0.025044722719141325,
-      "top1_solo_compartidas": 0.295169946332737,
+      "secuencias_evaluadas": 564,
+      "top1_vocabulario_completo": 0.024822695035460994,
+      "top1_solo_compartidas": 0.29609929078014185,
       "azar_solo_compartidas": 0.09090909090909091
     },
     "iteso_a_uaemex": {
       "secuencias_evaluadas": 99,
-      "top1_vocabulario_completo": 0.06060606060606061,
-      "top1_solo_compartidas": 0.16161616161616163,
+      "top1_vocabulario_completo": 0.08080808080808081,
+      "top1_solo_compartidas": 0.18181818181818182,
       "azar_solo_compartidas": 0.09090909090909091
     }
   },
