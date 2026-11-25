@@ -182,3 +182,57 @@ participantes.
 2. Si las capas ocultas quedan fijas, ¿por qué adaptar la última capa es un problema convexo y
    reentrenar toda la red no?
 3. ¿Por qué la adaptación puede empeorar a alguien que ya estaba en 0.97?
+
+## Hito 5 · De letras a palabras: la GRU (2026-11-24)
+
+### Por qué una red recurrente
+
+Una letra estática es una foto: un vector x de 60 números alcanza. Una palabra es un
+movimiento: una secuencia x_1, …, x_T con T = 16 momentos de 126 números cada uno. Hay dos
+formas de pasársela a una red:
+- **Aplanarla** (16 · 126 = 2016 entradas) y usar la red densa de la unidad 10. Es la línea
+  base `mlp` de P1.
+- **Una celda recurrente** que lee un momento a la vez y lleva un estado h_t que resume lo visto
+  hasta t. Comparte los mismos pesos en todos los momentos, así que tiene muchos menos
+  parámetros que la red aplanada.
+
+### La celda (src/redneuronal/recurrente.py)
+
+    z_t = σ(W_z x_t + U_z h_{t−1} + b_z)            ¿cuánto actualizo? (0 = conservo h_{t−1})
+    r_t = σ(W_r x_t + U_r h_{t−1} + b_r)            ¿cuánto del pasado uso para el candidato?
+    h̃_t = tanh(W_h x_t + U_h (r_t ⊙ h_{t−1}) + b_h)
+    h_t = (1 − z_t) ⊙ h_{t−1} + z_t ⊙ h̃_t
+    ŷ  = softmax(V [h_T; h̄] + c),   h̄ = (1/T) Σ h_t
+
+### Retropropagación en el tiempo (BPTT)
+
+Es la misma regla de la cadena de la unidad 10. Se «desenrolla» la red en T capas que comparten
+pesos y se suman los gradientes de todas.
+1. **Salida:** δ = ŷ − y (softmax con entropía cruzada, como en las letras). Entonces
+   ∇V = δ [h_T; h̄]ᵀ y ∇c = δ.
+2. **Lo que llega a los estados:** a h_T le llega Vᵀδ por la parte de h_T. A cada h_t le llega
+   además (1/T) de la parte de h̄.
+3. **Hacia atrás**, con dh = ∂L/∂h_t, para t = T, …, 1:
+   - dz = dh ⊙ (h̃_t − h_{t−1})
+   - dh̃ = dh ⊙ z_t
+   - da_h = dh̃ ⊙ (1 − h̃_t²), porque tanh' = 1 − tanh²
+   - dr = (U_hᵀ da_h) ⊙ h_{t−1}
+   - da_z = dz ⊙ z_t(1 − z_t) y da_r = dr ⊙ r_t(1 − r_t), porque σ' = σ(1 − σ)
+   - ∇W_g += da_g x_tᵀ, ∇U_g += da_g (entrada de U_g)ᵀ, ∇b_g += da_g, con g ∈ {z, r, h}
+   - ∂L/∂h_{t−1} = dh ⊙ (1 − z_t) + (U_hᵀ da_h) ⊙ r_t + U_zᵀ da_z + U_rᵀ da_r, más su parte de h̄
+4. **Comprobación:** `tests/test_recurrente.py` compara cada parámetro contra diferencias finitas
+   (error < 1e-6).
+
+### Por qué Adam y recorte
+
+Con SGD simple la GRU aprende muy lento. Adam escala cada paso por la magnitud reciente del
+gradiente de cada peso. El recorte (norma ≤ 5) evita que un gradiente que «explota» en la BPTT
+arruine los pesos de un solo paso.
+
+### Tres preguntas (contestar sin ver el código)
+
+1. Si z_t = 0 en todos los momentos, ¿qué vale h_T? ¿Qué aprende entonces la red?
+2. ¿Por qué la salida usa h̄ además de h_T? Piensa en cuántos productos de matrices recorre el
+   gradiente hasta llegar a x_1 en cada caso.
+3. ¿Por qué adaptar solo V y c a una persona nueva es un problema convexo, y adaptar toda la GRU
+   no?
