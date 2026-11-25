@@ -22,8 +22,14 @@ El umbral de la página se elige aquí: el menor u con exactitud de lo
 respondido ≥ 0.9 en validación (si ninguno llega, se reporta y la página usa
 el que maximiza exactitud × cobertura).
 
+Con --iteso o --propios esos datos entran al entrenamiento de cada pliegue
+(se valida igual, con las personas de UAEMex y las del dataset propio): así
+se calibra el modelo de la página con los mismos datos con que se entrena.
+
 Uso:
     python -m lsm.palabras.experimentos.p5_no_se datos/secuencias_uaemex.npz
+    python -m lsm.palabras.experimentos.p5_no_se datos/secuencias_uaemex.npz \\
+        --iteso datos/secuencias_iteso.npz --salida resultados/p5_no_se_con_iteso.json
 """
 
 import argparse
@@ -123,7 +129,7 @@ def senas_desconocidas(datos, y, K, procesos):
     y_nueva = np.searchsorted(restantes, y)  # índices 0..K'−1 para las conocidas
     tareas = []
     for p in personas_de_validacion(datos):
-        suyas = (datos.persona == p) & (datos.dataset == "uaemex")
+        suyas = datos.persona == p
         tareas.append((datos.X, y_nueva, (datos.persona != p) & conocida, suyas & conocida, suyas & ~conocida,
                        len(restantes)))
     with ProcessPoolExecutor(procesos) as ejecutor:
@@ -134,11 +140,14 @@ def senas_desconocidas(datos, y, K, procesos):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("uaemex", type=Path)
+    ap.add_argument("--iteso", type=Path)
+    ap.add_argument("--propios", type=Path)
     ap.add_argument("--salida", type=Path, default=Path("resultados/p5_no_se.json"))
     ap.add_argument("--procesos", type=int, default=6)
     args = ap.parse_args()
 
-    datos, y, glosas, _ = preparar([args.uaemex])
+    rutas = [args.uaemex] + [r for r in (args.iteso, args.propios) if r]
+    datos, y, glosas, _ = preparar(rutas)
     K = len(glosas)
     _, salidas = dejando_una_persona_fuera(ModeloGRU, datos, datos.X, y, K, args.procesos)
     P = np.concatenate([s[0] for s in salidas.values()])
@@ -166,6 +175,7 @@ def main():
     args.salida.parent.mkdir(parents=True, exist_ok=True)
     args.salida.write_text(json.dumps({
         "experimento": "P5 «no sé»: cobertura contra exactitud, calibración y señas desconocidas",
+        "datos": [str(r) for r in rutas],
         "sin_calibrar": sin_calibrar,
         "calibrado": {**calibrado, "temperatura_por_persona": taus},
         "temperatura_final": tau_final,
