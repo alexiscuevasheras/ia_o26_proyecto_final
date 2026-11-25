@@ -159,8 +159,20 @@ def forma_3d(mano_3d, espejo):
     return m - m[0]
 
 
+def sin_reposo_largo(manos, centro, escala, margen=3):
+    """Índices [inicio, fin) sin el reposo de más al principio y al final: los videos
+    de ITESO duran 5 s y la seña ocupa poco más de uno."""
+    altura = (manos[:, :, 0, 1] - centro[1]) / escala
+    activos = np.flatnonzero((altura < ARRIBA).any(axis=1))
+    if len(activos) == 0:
+        return 0, len(manos)
+    return max(0, activos[0] - margen), min(len(manos), activos[-1] + 1 + margen)
+
+
 def clip_de_muestra(manos, manos_3d, centro, escala, espejo, n_cuadros=None):
     """Lista de cuadros {cuerpo, manos} en el sistema del avatar (ver el docstring)."""
+    inicio, fin = sin_reposo_largo(manos, centro, escala)
+    manos, manos_3d = manos[inicio:fin], manos_3d[inicio:fin]
     munecas = suavizar(munecas_desde_imagen(manos, centro, escala, espejo))
     formas = np.full_like(manos_3d, np.nan)
     for brazo in (0, 1):

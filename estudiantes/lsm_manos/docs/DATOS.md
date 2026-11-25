@@ -89,9 +89,13 @@ Outmane Oubram (UAEM), Bassam Ali (UADY), Noureddine Lakouari (INAOE).
 - Licencia: CC BY 4.0, verificada en la API.
 - El artículo describe 100 señas, 5,000 videos y 3 personas. **Lo publicado en Mendeley son 49
   carpetas (de «Abrir» a «Él»):** 2,159 videos (2,107 MP4 y 52 MOV) que pesan 10.73 GB.
-- No dice quién es quién. **Hipótesis:** el sufijo del nombre de archivo (`12`, `12_1`, `12_2`)
-  es la persona; los `IMG_xxxx.mov` se tratan como una persona aparte. Hay que comprobarlo con
-  las proporciones del cuerpo.
+- No dice quién es quién. Teníamos la hipótesis de que el sufijo del archivo (`12`, `12_1`,
+  `12_2`) era la persona. **Es falsa:** 1,819 de los 2,123 videos que bajamos no tienen sufijo,
+  y van numerados del 1 al ~52 por palabra. Como no sabemos quién es quién, ITESO se usa solo
+  para entrenar, para el avatar y para P3; no se puede evaluar por persona con él.
+- Bajamos 2,123 videos (36 fallaron tras 5 intentos). Cada uno tiene 75 cuadros a 15 fps
+  (5 s), y la seña ocupa poco más de un segundo. MediaPipe ve el cuerpo en el 100 % de los
+  cuadros y las dos manos en el 48 %, mucho mejor que en UAEMex.
 - Videos de teléfono en condiciones no controladas. El extractor los baja a 15 cuadros por
   segundo y a 960 px de lado mayor.
 
