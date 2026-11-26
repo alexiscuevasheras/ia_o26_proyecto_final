@@ -80,6 +80,18 @@ actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por 
     modelos/pose_landmarker_full.task 9.0 MB detector de MediaPipe (también se baja, ver abajo)
   Con eso ya corren la demo y todos los experimentos.
 
+  Para saber si tienes las versiones correctas (las de umbral de manos 0.1, del 2026-11-25):
+      shasum -a 256 datos/*.npz modelos/*.json | cut -c1-16
+    e949f728b2862a7e  datos/secuencias_uaemex.npz     27,266,092 bytes
+    834c8fbe137e8883  datos/secuencias_iteso.npz     241,971,066 bytes
+    b3d56bdb42e2caa5  modelos/palabras.json            1,772,722 bytes
+    1cdf7ba07813f49c  modelos/animaciones.json         8,761,630 bytes
+    b04b3006304726b0  modelos/pesos.json               1,045,360 bytes
+    e4c1cc90f57c77c2  datos/landmarks_d1.csv         367,010,582 bytes
+  Si un .npz mide 23,341,480 (UAEMex) o 232,812,857 (ITESO) bytes es de la extracción vieja
+  (umbral 0.3): pide la nueva o regenérala con el camino largo. Los modelos se regeneran a
+  partir de los .npz con los tres últimos comandos de palabras del camino largo.
+
   CAMINO LARGO (reproducir todo desde cero; ~14 GB de descargas, pedir permiso antes):
 
     # Detectores de MediaPipe (van en modelos/)
@@ -93,7 +105,8 @@ actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por 
     .venv/bin/python -m lsm.palabras.descargar iteso datos/crudos/iteso
     #   (si fallan videos, se vuelve a correr: salta los que ya están y verifica sha256)
 
-    # Puntos de cada seña (MediaPipe; tarda, usa varios procesos)
+    # Puntos de cada seña (MediaPipe; tarda: ITESO más de una hora). Umbral de manos 0.1 por
+    # omisión (P7); --confianza-manos 0.3 reproduce la extracción vieja.
     .venv/bin/python -m lsm.palabras.extraer uaemex datos/crudos/uaemex datos/secuencias_uaemex.npz
     .venv/bin/python -m lsm.palabras.extraer iteso datos/crudos/iteso datos/secuencias_iteso.npz
 
@@ -113,7 +126,26 @@ actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por 
         --salida datos/landmarks_d1.csv --modelo modelos/hand_landmarker.task
     .venv/bin/python -m lsm.exportar pesos modelos/pesos.json
 
-2.3 La demo
+2.3 Rehacer TODOS los resultados (en este orden; cada uno escribe su resultados/*.json)
+
+    PY=.venv/bin/python; U=datos/secuencias_uaemex.npz; I=datos/secuencias_iteso.npz
+    $PY -m lsm.palabras.experimentos.p1_reconocimiento $U                     # P1, 5 modelos
+    $PY -m lsm.palabras.experimentos.p1_reconocimiento $U --iteso $I --modelos logistica mlp gru \
+        --salida resultados/p1_palabras_con_iteso.json
+    $PY -m lsm.palabras.experimentos.p2_ablaciones $U                         # el más lento
+    $PY -m lsm.palabras.experimentos.p3_entre_datasets $U $I
+    $PY -m lsm.palabras.experimentos.p5_no_se $U
+    $PY -m lsm.palabras.experimentos.p5_no_se $U --iteso $I --salida resultados/p5_no_se_con_iteso.json
+    $PY -m lsm.palabras.experimentos.p6_personas_conocidas $U $I
+    $PY -m lsm.palabras.experimentos.p7_tamiz datos/crudos/uaemex             # necesita las fotos
+    $PY -m lsm.palabras.experimentos.p7_extraccion datos/secuencias_uaemex_c03.npz $U --nombres 0.3 0.1
+        #   (secuencias_uaemex_c03.npz = extraer con --confianza-manos 0.3)
+    # y luego el modelo de la página y las animaciones (comandos de 2.2, camino largo), y:
+    $PY -m lsm.palabras.revisar_animaciones modelos/animaciones.json          # poses imposibles
+  La GRU usa semillas fijas: los números deben salir iguales a los de la sección 5.
+  Tiempos de referencia (laptop de Alexis): P1 y P5 tardan decenas de minutos; P2, más de una hora.
+
+2.4 La demo
 
     make demo     # o: python3 -m http.server 8000 --bind 127.0.0.1
     # Chrome: http://localhost:8000/web/        (señas → texto, pide la cámara)
@@ -132,7 +164,9 @@ actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por 
   UAEMex «Mexican sign language dataset» — Mendeley, doi:10.17632/6rj76z6y3n.1, CC BY 4.0.
     249 palabras, 11 personas (01–11), 31,415 JPG (~12 fotos por seña, una repetición por
     persona y palabra). Caras pixeladas, ropa negra sobre fondo negro: MediaPipe no ve mano en
-    ~27 % de los cuadros y pierde la mano levantada frente a la cara.
+    ~27 % de los cuadros con el umbral 0.3 (15 % con el 0.1 que usamos ahora, ver P7) y pierde
+    la mano levantada frente a la cara. Algunas grabaciones tienen el marco de los hombros mal
+    estimado (p. ej. persona 06, glosa YO: la mano nunca baja del nivel de la cara).
     PRUEBA FINAL FIJA: personas 10 y 11 (las de número más alto). No se usan para elegir nada.
   ITESO-MX-100 — Mendeley, doi:10.17632/g45jkzys4f.1, CC BY 4.0.
     El artículo dice 100 señas; Mendeley publica solo 49 carpetas: 2,159 videos (10.7 GB), 42
@@ -174,8 +208,11 @@ actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por 
                                    codo por cinemática inversa, forma de la mano en 3D; limpieza
                                    (sin detecciones sueltas, filtro de Hampel, reposo si la mano
                                    casi no se ve, sin atravesar cabeza/torso)
+  src/lsm/palabras/extraer.py      MediaPipe sobre fotos/videos → npz; umbral de manos 0.1
+                                   (debe coincidir con web/camara.js)
+  src/lsm/palabras/revisar_animaciones.py  cuenta poses imposibles en animaciones.json
   src/lsm/palabras/importar_propios.py  JSON de grabar.html → npz del dataset propio
-  src/lsm/palabras/experimentos/   P1–P6 (ver sección 5); comun.py tiene la validación
+  src/lsm/palabras/experimentos/   P1–P7 (ver sección 5); comun.py tiene la validación
   web/secuencias.js, gru.js        espejo exacto de Python (pruebas de paridad)
   web/segmentador.js, en_vivo.js   corta de reposo a reposo; letra vs palabra; «no sé»
   web/avatar.js                    avatar three.js 0.170.0
@@ -247,8 +284,50 @@ actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por 
   7. BITACORA.md está vacía: cada quien registra lo que hizo, con evidencia.
   8. Decidir si se borra la carpeta vieja Redes/lsm_manos/ (fuera del repo, en la compu de Alexis).
 
+  Ideas técnicas que siguen (no empezadas), por si sobra tiempo:
+  9. Probar la página señas → texto EN VIVO con cámara y anotar qué tan bien reconoce: nunca se
+     ha medido en vivo; todos los números son de los datasets. Con el dataset propio eso queda
+     medido de verdad (P1 con --propios).
+  10. Grabaciones con el marco de hombros mal estimado (como persona 06): ensucian también las
+     features, no solo el avatar. Medir cuántas son (extremos_en_reposo de animaciones.py sirve
+     de detector: 15 % de UAEMex no empiezan o no terminan en reposo) y probar si excluirlas o
+     corregir su centro sube P1. Decidirlo sin mirar a las personas 10 y 11.
+  11. Las personas de prueba 10 y 11 NO se han evaluado nunca. Se evalúan una sola vez, al final,
+     con el modelo ya elegido. Falta escribir ese script (ningún experimento actual los toca).
+  12. Avatar: 8 clips quedan topados en la coronilla y en 26 una mano casi no se ve
+     (revisar_animaciones.py los lista). La evaluación humana dirá cuáles importan.
+
 --------------------------------------------------------------------------
-7. CÓMO TRABAJAR SIN PISARSE
+7. RELEVO (estado exacto al dejarlo, 2026-11-25 por la noche)
+--------------------------------------------------------------------------
+
+  - Todo el código, resultados y documentación están en main del fork; no queda nada sin commit
+    ni nada corriendo. git log --oneline muestra la historia completa con el porqué de cada paso.
+  - Lo último que se hizo: P7 (umbral de manos 0.1), rehacer P1–P6 con esa extracción, corregir
+    el criterio de P5 (cobertura mínima 20 %), clips del avatar que empiezan y terminan en
+    reposo, Docker probado, este LEEME.
+  - Drive (carpeta «lsm_manos · datos y modelos», privada; pídele acceso a Alexis): verifica las
+    huellas de la sección 2.2. Si los .npz o los modelos son los viejos, regénéralos.
+  - En la compu de Alexis quedan, fuera de git y sin necesidad de copiarse: las extracciones
+    viejas (datos/secuencias_*_c03.npz, para P7), modelos/palabras_solo_uaemex.json y las
+    descargas crudas (datos/crudos, 12 GB).
+  - Errores que ya nos pasaron y conviene no repetir:
+      * Un resultado se dijo antes de medirlo bien («el problema es generalizar a personas») y
+        P6 lo desmintió. Antes de afirmar, medir; si se contradice, corregirlo por escrito.
+      * El aumento de datos ensuciaba las columnas que una ablación ponía en cero: las
+        columnas_fuera se aplican dentro del modelo, después del aumento (modelos.py).
+      * Un criterio de «exactitud ≥ 90 %» sin cobertura mínima eligió responder al 0.7 %.
+      * Una detección suelta de MediaPipe interpolada a todo el clip dejaba un brazo levantado.
+      * El ancho de hombros de UAEMex es bimodal (ropa negra): por eso el marco robusto.
+      * Correr procesos largos con «&» en la terminal: mueren al cerrarla. Usar nohup o una
+        terminal que no se cierre (o el modo en segundo plano del agente).
+  - Para un agente que retoma: lee este archivo, README.md, docs/DATOS.md, docs/NOTAS_ESTUDIO.md;
+    corre make pruebas y node --test tests/web/*.test.mjs; verifica las huellas de 2.2; levanta
+    la demo y mira web/voz.html. Después sigue la sección 6 en orden. Pregunta al equipo antes
+    de descargar más de 500 MB, instalar algo pesado o cambiar algo fuera de esta carpeta.
+
+--------------------------------------------------------------------------
+8. CÓMO TRABAJAR SIN PISARSE
 --------------------------------------------------------------------------
 
   - Una rama por tarea (git checkout -b nadia/grabar-dataset), commits pequeños en español,

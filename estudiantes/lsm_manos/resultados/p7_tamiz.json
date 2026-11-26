@@ -1,0 +1,44 @@
+{
+  "experimento": "P7 tamiz de detección de manos en UAEMex (400 fotos al azar, semilla 0)",
+  "resultados": {
+    "base (0.3)": {
+      "manos_por_cuadro": 1.005,
+      "al_menos_una": 0.7225,
+      "dos_manos": 0.2825
+    },
+    "confianza 0.1": {
+      "manos_por_cuadro": 1.2575,
+      "al_menos_una": 0.8225,
+      "dos_manos": 0.435
+    },
+    "gamma 0.6": {
+      "manos_por_cuadro": 1.04,
+      "al_menos_una": 0.7375,
+      "dos_manos": 0.3025
+    },
+    "CLAHE": {
+      "manos_por_cuadro": 0.98,
+      "al_menos_una": 0.7,
+      "dos_manos": 0.28
+    },
+    "doble tamaño": {
+      "manos_por_cuadro": 0.975,
+      "al_menos_una": 0.715,
+      "dos_manos": 0.26
+    },
+    "CLAHE + gamma": {
+      "manos_por_cuadro": 0.88,
+      "al_menos_una": 0.65,
+      "dos_manos": 0.23
+    },
+    "CLAHE + 0.1": {
+      "manos_por_cuadro": 1.225,
+      "al_menos_una": 0.8175,
+      "dos_manos": 0.4075
+    }
+  },
+  "entorno": {
+    "python": "3.14.5",
+    "numpy": "2.5.5"
+  }
+}
