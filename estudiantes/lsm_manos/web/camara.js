@@ -22,7 +22,7 @@ export async function cargarDetectores() {
   };
   return Promise.all([
     crear(HandLandmarker, { baseOptions: { modelAssetPath: MODELO_MANOS }, runningMode: "VIDEO", numHands: 2,
-      minHandDetectionConfidence: 0.3, minHandPresenceConfidence: 0.3 }),
+      minHandDetectionConfidence: 0.1, minHandPresenceConfidence: 0.1 }), // igual que extraer.py (P7)
     crear(PoseLandmarker, { baseOptions: { modelAssetPath: MODELO_CUERPO }, runningMode: "VIDEO",
       minPoseDetectionConfidence: 0.3, minPosePresenceConfidence: 0.3 }),
   ]);

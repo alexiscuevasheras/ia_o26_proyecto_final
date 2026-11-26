@@ -69,7 +69,9 @@ def muestras_iteso(raiz):
     return muestras
 
 
-CONFIANZA_MANOS = 0.3
+# Con 0.3, en UAEMex no se ve mano en 27 % de los cuadros; con 0.1, en 15 %, y la GRU
+# reconoce mejor (P7). La página usa el mismo valor (web/camara.js).
+CONFIANZA_MANOS = 0.1
 _detectores = None
 _confianza_manos = CONFIANZA_MANOS
 
