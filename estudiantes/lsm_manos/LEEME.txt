@@ -81,13 +81,17 @@ actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por 
   Con eso ya corren la demo y todos los experimentos.
 
   Para saber si tienes las versiones correctas (las de umbral de manos 0.1, del 2026-11-25):
-      shasum -a 256 datos/*.npz modelos/*.json | cut -c1-16
+      shasum -a 256 datos/*.npz modelos/*.json modelos/*.task | cut -c1-16
     e949f728b2862a7e  datos/secuencias_uaemex.npz     27,266,092 bytes
     834c8fbe137e8883  datos/secuencias_iteso.npz     241,971,066 bytes
     b3d56bdb42e2caa5  modelos/palabras.json            1,772,722 bytes
     1cdf7ba07813f49c  modelos/animaciones.json         8,761,630 bytes
     b04b3006304726b0  modelos/pesos.json               1,045,360 bytes
     e4c1cc90f57c77c2  datos/landmarks_d1.csv         367,010,582 bytes
+    fbc2a30080c3c557  modelos/hand_landmarker.task     7,819,105 bytes
+    4eaa5eb7a9836522  modelos/pose_landmarker_full.task 9,398,198 bytes
+  Los .task se bajan de una URL «latest»: si la huella no coincide, Google publicó otra versión
+  y los números pueden cambiar un poco; pide a Alexis la copia de Drive.
   Si un .npz mide 23,341,480 (UAEMex) o 232,812,857 (ITESO) bytes es de la extracción vieja
   (umbral 0.3): pide la nueva o regenérala con el camino largo. Los modelos se regeneran a
   partir de los .npz con los tres últimos comandos de palabras del camino largo.
