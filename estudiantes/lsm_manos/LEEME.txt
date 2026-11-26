@@ -60,7 +60,7 @@ actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por 
 
     make entorno        # .venv con numpy, pytest, torch (solo para comprobar gradientes),
                         # mediapipe 1.2.3 y scikit-learn (baselines). Pesa bastante.
-    make pruebas        # 65 pruebas de Python deben pasar
+    make pruebas        # 66 pruebas de Python deben pasar
     node --test tests/web/*.test.mjs   # 22 pruebas de JS deben pasar
 
   Todos los comandos de Python se corren desde estudiantes/lsm_manos con:
@@ -70,11 +70,11 @@ actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por 
 
   CAMINO CORTO (recomendado para ponerse al día): pedirle a Alexis por Drive los archivos ya
   generados y ponerlos tal cual:
-    datos/secuencias_uaemex.npz      22 MB   puntos de UAEMex
-    datos/secuencias_iteso.npz      222 MB   puntos de ITESO (los 2,159 videos)
+    datos/secuencias_uaemex.npz      26 MB   puntos de UAEMex (umbral de manos 0.1)
+    datos/secuencias_iteso.npz      242 MB   puntos de ITESO (los 2,159 videos, umbral 0.1)
     datos/landmarks_d1.csv          350 MB   puntos del alfabeto D1 (solo si vas a tocar letras)
     modelos/palabras.json           1.7 MB   GRU de palabras (UAEMex + ITESO, 280 glosas)
-    modelos/animaciones.json        6.4 MB   clips del avatar (241 glosas + 21 letras)
+    modelos/animaciones.json        8.8 MB   clips del avatar (263 glosas + 21 letras)
     modelos/pesos.json              1.0 MB   red de letras
     modelos/hand_landmarker.task    7.5 MB   detector de MediaPipe (también se baja, ver abajo)
     modelos/pose_landmarker_full.task 9.0 MB detector de MediaPipe (también se baja, ver abajo)
@@ -189,25 +189,36 @@ actual. El objetivo del equipo: calidad «de tesis», sin dejar cosas fuera por 
   Validación: dejando una persona fuera (las 9 de UAEMex que no son de prueba). Azar con 249
   glosas: 0.004.
 
-  P1 UAEMex, persona nueva (top-1):  GRU 0.107 ± 0.045 (top-5 0.266) · logística 0.093 ·
-                                     SVM 0.084 · red densa 0.080 · kNN 0.054
-  P1 + ITESO al entrenar (280 glosas): GRU 0.094 — no ayuda a reconocer personas nuevas de UAEMex
-  P2 ablaciones (GRU): sin forma de la mano 0.040 · solo dominante 0.078 · sin posición 0.100 ·
-                       sin aumento 0.105 · T=8 0.102 · T=32 0.107
-  P3 entre datasets (11 glosas compartidas, azar 0.091): UAEMex→ITESO 0.296; ITESO→UAEMex 0.182
+  Todo sale de la extracción con umbral de manos 0.1 (ver P7).
+
+  P1 UAEMex, persona nueva (top-1):  GRU 0.146 ± 0.048 (top-5 0.339) · logística 0.114 ·
+                                     SVM 0.105 · red densa 0.105 · kNN 0.069
+  P1 + ITESO al entrenar (280 glosas): GRU 0.110 — no ayuda a reconocer personas nuevas de UAEMex
+  P2 ablaciones (GRU): sin forma de la mano 0.052 · solo dominante 0.108 · sin posición 0.126 ·
+                       sin aumento 0.130 · T=8 0.133 · T=32 0.135
+  P3 entre datasets (11 glosas compartidas, azar 0.091): UAEMex→ITESO 0.344; ITESO→UAEMex 0.232
   P4 adaptación con k ejemplos: PENDIENTE, necesita el dataset propio (script ya listo y probado
      de punta a punta con datos falsos)
-  P5 «no sé»: temperatura baja el ECE de 0.389 a 0.018 (τ 2.95); con ITESO 0.451 → 0.016 (τ 3.13,
-     es la del modelo de la página). Ningún umbral llega a 90 % de exactitud → umbral 0.
-     Distinguir señas conocidas de desconocidas: AUROC 0.537 (casi azar).
+  P5 «no sé»: temperatura baja el ECE de 0.367 a 0.029 (τ 2.47); con ITESO 0.433 → 0.017 (τ 2.78,
+     es la del modelo de la página). Ningún umbral que responda al menos al 20 % llega a 90 % de
+     exactitud → umbral 0 (sin esa cobertura mínima el criterio elegía uno que respondía al 0.7 %).
+     La confianza sí ordena: con umbral 0.15 responde al 24 % y acierta el 30 %.
+     Distinguir señas conocidas de desconocidas: AUROC 0.566 (cerca del azar).
   P6 diagnóstico con personas conocidas (división al azar; NO mide generalización):
-     UAEMex 0.090 · ITESO 0.984 · ITESO con solo 7 ejemplos por glosa 0.876.
+     UAEMex 0.121 · ITESO 0.974 · ITESO con solo 7 ejemplos por glosa 0.876.
+  P7 umbral de manos de MediaPipe en UAEMex, 0.3 → 0.1: cuadros sin mano de 26.9 % a 15.1 %;
+     GRU 0.107 → 0.146, mejoran 8 de 9 personas (Wilcoxon p = 0.008, signos p = 0.039).
+     El umbral se eligió por la detección (400 fotos y revisión a ojo), no por la exactitud.
 
   Lectura (la importante para la tesis): la red y las features SÍ funcionan (98 % en ITESO). En
   UAEMex falla igual con personas conocidas que con nuevas, así que su límite son sus datos, no
   generalizar a personas. P6 no separa del todo dos factores: 249 glosas contra 42, y que en
   ITESO la misma persona repite la seña. Corrección registrada: primero dijimos que el problema
-  era «generalizar a personas nuevas»; P6 lo desmintió y se corrigió.
+  era «generalizar a personas nuevas»; P6 lo desmintió y se corrigió. P7 confirmó la lectura:
+  mejorar la extracción (no la red) subió la GRU de 0.107 a 0.146.
+
+  Avatar: animaciones.json elige por glosa una repetición que empiece y termine en reposo, que no
+  se salga del espacio de señas, y luego el medoide (263 glosas).
 
 --------------------------------------------------------------------------
 6. QUÉ FALTA (en orden de impacto)

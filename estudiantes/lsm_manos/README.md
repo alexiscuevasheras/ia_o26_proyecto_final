@@ -97,23 +97,25 @@ elegir nada.
 
   | Experimento | Qué mide | Resultado (top-1) |
   |---|---|---|
-  | P1, UAEMex | persona nueva, 249 glosas | GRU 0.107 ± 0.045 (top-5 0.266); logística 0.093, SVM 0.084, red densa 0.080, kNN 0.054 |
-  | P1, + ITESO al entrenar | persona nueva de UAEMex, 280 glosas | GRU 0.094; no ayuda |
-  | P2 | qué parte importa (GRU) | sin la forma de la mano 0.040; solo la mano dominante 0.078; sin la posición 0.100; sin aumento 0.105 |
-  | P3 | de un dataset al otro, 11 glosas compartidas (azar 0.091) | UAEMex → ITESO 0.296; ITESO → UAEMex 0.182 |
+  | P1, UAEMex | persona nueva, 249 glosas | GRU 0.146 ± 0.048 (top-5 0.339); logística 0.114, SVM 0.105, red densa 0.105, kNN 0.069 |
+  | P1, + ITESO al entrenar | persona nueva de UAEMex, 280 glosas | GRU 0.110; no ayuda |
+  | P2 | qué parte importa (GRU) | sin la forma de la mano 0.052; solo la mano dominante 0.108; sin la posición 0.126; sin aumento 0.130; T=8 0.133; T=32 0.135 |
+  | P3 | de un dataset al otro, 11 glosas compartidas (azar 0.091) | UAEMex → ITESO 0.344; ITESO → UAEMex 0.232 |
   | P4 | adaptación con k ejemplos | pendiente: necesita el dataset propio (ver abajo) |
-  | P5 | calibración y «no sé» | ECE de 0.389 a 0.018 con temperatura 2.95; AUROC conocidas/desconocidas 0.537 (casi azar) |
-  | P5, + ITESO al entrenar | calibración del modelo de la página | ECE de 0.451 a 0.016 con temperatura 3.13; AUROC 0.521 |
-  | P6 | diagnóstico con personas conocidas (división al azar) | UAEMex 0.090; ITESO 0.984; ITESO con 7 ejemplos por glosa 0.876 |
+  | P5 | calibración y «no sé» | ECE de 0.367 a 0.029 con temperatura 2.47; ningún umbral llega a 90 % respondiendo al menos al 20 %; AUROC conocidas/desconocidas 0.566 |
+  | P5, + ITESO al entrenar | calibración del modelo de la página | ECE de 0.433 a 0.017 con temperatura 2.78; AUROC 0.491 |
+  | P6 | diagnóstico con personas conocidas (división al azar) | UAEMex 0.121; ITESO 0.974; ITESO con 7 ejemplos por glosa 0.876 |
+  | P7 | umbral de manos de MediaPipe 0.3 → 0.1 en UAEMex | cuadros sin mano de 26.9 % a 15.1 %; GRU de 0.107 a 0.146 (8 de 9 personas mejoran, Wilcoxon p = 0.008) |
 
   **Qué dicen juntos.** P6 no mide generalización: las mismas personas están en entrenamiento
   y en evaluación. Sirve para ubicar el error. En ITESO la GRU acierta casi todo, incluso con
   tan pocos ejemplos por glosa como UAEMex, así que la red y la entrada funcionan. En UAEMex
-  falla igual con personas conocidas que con nuevas (0.090 contra 0.107): ahí el límite está en
-  los datos, no en generalizar a personas. Dos diferencias que P6 no separa: UAEMex tiene 249
-  glosas contra 42, y cada persona hace cada seña una sola vez, mientras que en ITESO la misma
-  persona la repite. Lo que sí medimos de la calidad: MediaPipe no ve mano en el 27 % de los
-  cuadros de UAEMex y pierde la mano levantada frente a la cara (fondo y ropa negros).
+  no mejora con personas conocidas (0.121 contra 0.146 con nuevas): ahí el límite está en los
+  datos, no en generalizar a personas. Dos diferencias que P6 no separa: UAEMex tiene 249 glosas
+  contra 42, y cada persona hace cada seña una sola vez, mientras que en ITESO la misma persona
+  la repite. P7 ataca la calidad directamente: con fondo y ropa negros MediaPipe perdía la mano
+  en el 27 % de los cuadros; bajando su umbral de confianza la pierde en el 15 % y todos los
+  modelos mejoran. Todos los números de la tabla salen ya de la extracción con umbral 0.1.
 
   **Siguiente paso:** el dataset propio, grabado con `web/grabar.html` en las mismas
   condiciones que la demo (video continuo de cámara web, ~10 repeticiones por persona y

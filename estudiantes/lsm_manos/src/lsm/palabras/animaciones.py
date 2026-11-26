@@ -27,8 +27,10 @@ Limpieza, porque una sola detección falsa deja un brazo levantado todo el clip:
   reposo y vuelve a él, en vez de quedarse congelada;
 - la muñeca no sube más que la coronilla, y si la mano entra en la cabeza o
   en el torso se empuja hacia adelante;
-- entre las repeticiones de una glosa se descartan las que quedan fuera del
-  espacio de señas antes de elegir el medoide.
+- entre las repeticiones de una glosa se prefieren las que empiezan y terminan
+  con la mano dominante en reposo (en estos datasets toda seña arranca y acaba
+  abajo; si no, el marco de los hombros se estimó mal y todo queda corrido) y,
+  de esas, las que no se salen del espacio de señas; luego el medoide.
 
 Ejes del avatar: metros, origen entre los hombros, x hacia la izquierda de la
 persona (en una cámara sin espejo, la derecha de la imagen), y hacia arriba,
@@ -87,6 +89,7 @@ MINIMA_RACHA = 2
 PRESENCIA_MINIMA = 0.25
 RAMPA = 4  # cuadros para salir del reposo o volver a él
 HAMPEL_VENTANA, HAMPEL_MINIMO = 2, 0.12  # vecinos de cada lado; metros que siempre se toleran
+REPOSO = 1.1  # anchos de hombro bajo los hombros: la mano está abajo (como SUBIR en web/segmentador.js)
 CORONILLA = 0.30  # altura máxima de la muñeca (la cabeza del avatar llega a ~0.34 m)
 # Volúmenes que la mano no puede atravesar, como los dibuja web/avatar.js, con margen.
 CABEZA_CENTRO, CABEZA_RADIOS = np.array([0.0, 0.226, 0.0]), np.array([0.105, 0.135, 0.125])
@@ -216,6 +219,14 @@ def adelante_para_no_atravesar(puntos):
     return empuje
 
 
+def extremos_en_reposo(manos, centro, escala, dominante):
+    """0, 1 o 2: cuántos extremos de la seña (primera y última detección de la
+    mano dominante) quedan abajo, en reposo."""
+    altura = (manos[:, dominante, 0, 1] - centro[1]) / escala
+    vista = altura[np.isfinite(altura)]
+    return int(len(vista) > 0 and vista[0] > REPOSO) + int(len(vista) > 0 and vista[-1] > REPOSO)
+
+
 def fuera_del_espacio(manos, centro, escala, espejo):
     """Fracción de cuadros con una muñeca detectada sobre la coronilla."""
     munecas, presentes = munecas_desde_imagen(manos, centro, escala, espejo)
@@ -320,14 +331,18 @@ def animaciones_de_glosas(rutas):
             datos = (manos, manos_3d, centro, escala, dominante[p] == 0, None if es_iteso else CUADROS_UAEMEX)
             glosa = glosa_de(vocabulario, z["dataset"][i], z["clase"][i])
             afuera = fuera_del_espacio(manos, centro, escala, dominante[p] == 0)
-            candidatos.setdefault(glosa, []).append((PRIORIDAD[z["dataset"][i]], X, datos, f"{p}/{z['ident'][i]}", afuera))
+            reposo_ok = extremos_en_reposo(manos, centro, escala, dominante[p])
+            candidatos.setdefault(glosa, []).append(
+                (PRIORIDAD[z["dataset"][i]], X, datos, f"{p}/{z['ident'][i]}", afuera, reposo_ok))
     glosas = {}
     for glosa, lista in sorted(candidatos.items()):
         mejor = max(c[0] for c in lista)
         lista = [c for c in lista if c[0] == mejor]
+        mas_reposo = max(c[5] for c in lista)
+        lista = [c for c in lista if c[5] == mas_reposo]
         menos_afuera = min(c[4] for c in lista)  # las que menos se salen; idealmente ninguna
         lista = [c for c in lista if c[4] == menos_afuera]
-        _, _, datos, origen, _ = lista[medoide(np.stack([c[1] for c in lista]))]
+        _, _, datos, origen, _, _ = lista[medoide(np.stack([c[1] for c in lista]))]
         glosas[glosa] = {"origen": origen, "cuadros": clip_de_muestra(*datos)}
     return glosas
 

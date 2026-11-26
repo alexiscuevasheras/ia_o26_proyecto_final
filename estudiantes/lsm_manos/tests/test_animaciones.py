@@ -3,7 +3,8 @@
 import numpy as np
 
 from lsm.palabras.animaciones import (CABEZA_CENTRO, CORONILLA, adelante_para_no_atravesar, con_rampas_al_reposo,
-                                      en_espacio_de_senas, reposo, sin_rachas_cortas, sin_saltos)
+                                      en_espacio_de_senas, extremos_en_reposo, reposo, sin_rachas_cortas,
+                                      sin_saltos)
 
 
 def test_quita_detecciones_sueltas():
@@ -34,3 +35,11 @@ def test_empuja_la_mano_fuera_de_la_cabeza_y_del_torso():
     assert adelante_para_no_atravesar(np.array([CABEZA_CENTRO])) > 0.1
     assert adelante_para_no_atravesar(np.array([[0.0, -0.2, 0.05]])) > 0
     assert adelante_para_no_atravesar(np.array([[0.0, 0.22, 0.3]])) == 0
+
+
+def test_cuenta_los_extremos_en_reposo():
+    manos = np.full((5, 2, 21, 3), np.nan)
+    manos[:, 1, 0, 1] = [1.5, 0.2, 0.1, 0.2, 1.4]  # abajo, arriba, abajo
+    assert extremos_en_reposo(manos, np.zeros(2), 1.0, 1) == 2
+    manos[:, 1, 0, 1] = -0.5  # siempre arriba de los hombros
+    assert extremos_en_reposo(manos, np.zeros(2), 1.0, 1) == 0

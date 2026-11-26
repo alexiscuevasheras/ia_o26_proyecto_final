@@ -246,12 +246,13 @@ arruine los pesos de un solo paso.
 - P3: entrenar en un dataset y evaluar en el otro, en las 11 glosas compartidas.
 - P5: calibración por temperatura y umbral de «no sé».
 - P6: diagnóstico con división al azar (personas conocidas) para ubicar el error.
+- P7: bajar el umbral de confianza de manos de MediaPipe y medir si mejora el reconocimiento.
 
 Todos los números están en el README y en `resultados/p*.json`.
 
 ### La lección de P6: separar las causas del error
 
-Con personas nuevas (P1) la GRU acierta 0.107 en UAEMex. Hay al menos tres explicaciones
+Con personas nuevas (P1, extracción original) la GRU acertaba 0.107 en UAEMex. Hay al menos tres explicaciones
 posibles y cada una pide un remedio distinto:
 
 | Si el problema fuera… | …con personas conocidas esperaríamos | Remedio |
@@ -260,18 +261,34 @@ posibles y cada una pide un remedio distinto:
 | pocos ejemplos por glosa | acierto alto en ITESO completo, bajo con pocos | más datos |
 | la calidad de los datos | acierto bajo aun con personas conocidas | otros datos o mejor extracción |
 
-Resultado: UAEMex 0.090 con personas conocidas (igual que con nuevas); ITESO 0.984, y 0.876
-con solo 7 ejemplos por glosa. Lo que más pesa en UAEMex es la calidad de los datos (MediaPipe no
+Resultado (extracción original): UAEMex 0.090 con personas conocidas (igual que con nuevas);
+ITESO 0.984, y 0.876 con solo 7 ejemplos por glosa. Lo que más pesa en UAEMex es la calidad de los datos (MediaPipe no
 ve mano en el 27 % de los cuadros), aunque P6 no separa del todo el número de glosas (249 contra
 42) ni que en ITESO la misma persona repite cada seña.
 
 Moraleja: antes de cambiar la red, mide dónde está el error. Un 10 % podía leerse como «la GRU es
 mala»; P6 muestra que con buenos datos la misma GRU llega a 98 %.
 
+### P7: atacar la causa que P6 señaló
+
+Si el problema es que MediaPipe pierde la mano, el remedio está en la extracción, no en la red.
+Bajamos el umbral de confianza de manos de 0.3 a 0.1, elegido viendo solo la detección (400 fotos
+al azar y una revisión a ojo de las manos nuevas), no la exactitud. Cuadros sin mano: de 26.9 % a
+15.1 %. La GRU sube de 0.107 a 0.146 con personas nuevas y mejoran 8 de 9 personas (Wilcoxon
+p = 0.008). Con la extracción nueva se volvieron a correr P1–P6; los números del README son ésos.
+
+Dos detalles de método que conviene saber explicar:
+- La comparación es pareada: la misma persona evaluada con las dos extracciones. Con 9 personas
+  la prueba de signos solo puede dar p ≥ 0.004 (9 de 9); por eso también se reporta Wilcoxon.
+- Al rehacer P5 su criterio eligió un umbral que respondía al 0.7 % de las señas (14 de 15 bien).
+  Un criterio de «exactitud ≥ 90 %» sin cobertura mínima premia responder casi nada; ahora exige
+  responder al menos al 20 %.
+
 ### Tres preguntas (contestar sin ver el código)
 
 1. ¿Por qué P6 no sirve como resultado de generalización, y aun así sirve para algo?
-2. En P2, quitar la forma de la mano baja a 0.040 y quitar la posición casi no cambia nada.
+2. En P2, quitar la forma de la mano baja de 0.146 a 0.052 y quitar la posición solo a 0.126.
    ¿Qué te dice eso sobre qué información usa la GRU?
-3. P5 da AUROC 0.537 entre señas conocidas y desconocidas. ¿Qué significa un AUROC de 0.5 y por
+3. P5 da AUROC 0.566 entre señas conocidas y desconocidas. ¿Qué significa un AUROC de 0.5 y por
    qué la temperatura no lo mejora?
+4. ¿Por qué el umbral de P7 se eligió con la tasa de detección y no con la exactitud de P1?

@@ -5,188 +5,188 @@
     "datos/secuencias_iteso.npz"
   ],
   "sin_calibrar": {
-    "ece": 0.45053758307729885,
+    "ece": 0.43260444775633516,
     "curva": [
       {
         "umbral": 0.0,
         "cobertura": 1.0,
-        "exactitud": 0.09417652411282984
+        "exactitud": 0.11010009099181074
       },
       {
         "umbral": 0.05,
         "cobertura": 1.0,
-        "exactitud": 0.09417652411282984
+        "exactitud": 0.11010009099181074
       },
       {
         "umbral": 0.1,
-        "cobertura": 1.0,
-        "exactitud": 0.09417652411282984
+        "cobertura": 0.9995450409463148,
+        "exactitud": 0.11015020482476104
       },
       {
         "umbral": 0.15,
-        "cobertura": 0.9954504094631483,
-        "exactitud": 0.09414990859232175
+        "cobertura": 0.989080982711556,
+        "exactitud": 0.11085556577736891
       },
       {
         "umbral": 0.2,
-        "cobertura": 0.9608735213830755,
-        "exactitud": 0.09611742424242424
+        "cobertura": 0.9545040946314831,
+        "exactitud": 0.11439466158245949
       },
       {
         "umbral": 0.25,
-        "cobertura": 0.9071883530482256,
-        "exactitud": 0.09979939819458375
+        "cobertura": 0.8967242948134668,
+        "exactitud": 0.11821410451547437
       },
       {
         "umbral": 0.3,
-        "cobertura": 0.827115559599636,
-        "exactitud": 0.10506050605060506
+        "cobertura": 0.8198362147406734,
+        "exactitud": 0.12486126526082131
       },
       {
         "umbral": 0.35,
-        "cobertura": 0.7484076433121019,
-        "exactitud": 0.10820668693009118
+        "cobertura": 0.7393084622383985,
+        "exactitud": 0.1316923076923077
       },
       {
         "umbral": 0.4,
-        "cobertura": 0.6747042766151047,
-        "exactitud": 0.1112609575185435
+        "cobertura": 0.6596906278434941,
+        "exactitud": 0.13655172413793104
       },
       {
         "umbral": 0.45,
-        "cobertura": 0.594631483166515,
-        "exactitud": 0.11553175210405509
+        "cobertura": 0.5850773430391265,
+        "exactitud": 0.14541213063763608
       },
       {
         "umbral": 0.5,
-        "cobertura": 0.5200181983621474,
-        "exactitud": 0.12073490813648294
+        "cobertura": 0.5141037306642402,
+        "exactitud": 0.15663716814159293
       },
       {
         "umbral": 0.55,
-        "cobertura": 0.451319381255687,
-        "exactitud": 0.13004032258064516
+        "cobertura": 0.4426751592356688,
+        "exactitud": 0.1695786228160329
       },
       {
         "umbral": 0.6,
-        "cobertura": 0.3853503184713376,
-        "exactitud": 0.1381345926800472
+        "cobertura": 0.3889899909008189,
+        "exactitud": 0.17894736842105263
       },
       {
         "umbral": 0.65,
-        "cobertura": 0.3321201091901729,
-        "exactitud": 0.14657534246575343
+        "cobertura": 0.33348498635122836,
+        "exactitud": 0.19508867667121418
       },
       {
         "umbral": 0.7,
         "cobertura": 0.2775250227479527,
-        "exactitud": 0.16393442622950818
+        "exactitud": 0.20655737704918034
       },
       {
         "umbral": 0.75,
-        "cobertura": 0.23475887170154686,
-        "exactitud": 0.17635658914728683
+        "cobertura": 0.2338489535941765,
+        "exactitud": 0.21206225680933852
       },
       {
         "umbral": 0.8,
-        "cobertura": 0.19381255686988172,
-        "exactitud": 0.18779342723004694
+        "cobertura": 0.19335759781619655,
+        "exactitud": 0.23294117647058823
       },
       {
         "umbral": 0.85,
-        "cobertura": 0.1410373066424022,
-        "exactitud": 0.2064516129032258
+        "cobertura": 0.15241128298453138,
+        "exactitud": 0.22388059701492538
       },
       {
         "umbral": 0.9,
-        "cobertura": 0.09736123748862602,
-        "exactitud": 0.2383177570093458
+        "cobertura": 0.10873521383075523,
+        "exactitud": 0.2301255230125523
       },
       {
         "umbral": 0.95,
-        "cobertura": 0.05232029117379436,
-        "exactitud": 0.30434782608695654
+        "cobertura": 0.0545950864422202,
+        "exactitud": 0.26666666666666666
       }
     ],
     "umbral_objetivo": null,
     "umbral_exactitud_por_cobertura": {
       "umbral": 0.0,
       "cobertura": 1.0,
-      "exactitud": 0.09417652411282984
+      "exactitud": 0.11010009099181074
     }
   },
   "calibrado": {
-    "ece": 0.015516707791321284,
+    "ece": 0.01698058063882637,
     "curva": [
       {
         "umbral": 0.0,
         "cobertura": 1.0,
-        "exactitud": 0.09417652411282984
+        "exactitud": 0.11010009099181074
       },
       {
         "umbral": 0.05,
-        "cobertura": 0.7434030937215651,
-        "exactitud": 0.11138310893512852
+        "cobertura": 0.9049135577797999,
+        "exactitud": 0.11664152840623429
       },
       {
         "umbral": 0.1,
-        "cobertura": 0.20746132848043677,
-        "exactitud": 0.19956140350877194
+        "cobertura": 0.43994540491355777,
+        "exactitud": 0.1778697001034126
       },
       {
         "umbral": 0.15,
-        "cobertura": 0.07097361237488627,
-        "exactitud": 0.26282051282051283
+        "cobertura": 0.20382165605095542,
+        "exactitud": 0.24107142857142858
       },
       {
         "umbral": 0.2,
-        "cobertura": 0.0272975432211101,
-        "exactitud": 0.4
+        "cobertura": 0.10464058234758872,
+        "exactitud": 0.24782608695652175
       },
       {
         "umbral": 0.25,
-        "cobertura": 0.011373976342129208,
-        "exactitud": 0.48
+        "cobertura": 0.049590536851683346,
+        "exactitud": 0.3302752293577982
       },
       {
         "umbral": 0.3,
-        "cobertura": 0.005914467697907188,
-        "exactitud": 0.38461538461538464
+        "cobertura": 0.029572338489535943,
+        "exactitud": 0.35384615384615387
       },
       {
         "umbral": 0.35,
-        "cobertura": 0.001364877161055505,
-        "exactitud": 0.3333333333333333
+        "cobertura": 0.020473157415832575,
+        "exactitud": 0.37777777777777777
       },
       {
         "umbral": 0.4,
-        "cobertura": 0.001364877161055505,
-        "exactitud": 0.3333333333333333
+        "cobertura": 0.012738853503184714,
+        "exactitud": 0.35714285714285715
       },
       {
         "umbral": 0.45,
-        "cobertura": 0.0,
-        "exactitud": null
+        "cobertura": 0.0077343039126478615,
+        "exactitud": 0.35294117647058826
       },
       {
         "umbral": 0.5,
-        "cobertura": 0.0,
-        "exactitud": null
+        "cobertura": 0.003639672429481347,
+        "exactitud": 0.5
       },
       {
         "umbral": 0.55,
-        "cobertura": 0.0,
-        "exactitud": null
+        "cobertura": 0.0022747952684258415,
+        "exactitud": 0.4
       },
       {
         "umbral": 0.6,
-        "cobertura": 0.0,
-        "exactitud": null
+        "cobertura": 0.0009099181073703367,
+        "exactitud": 0.5
       },
       {
         "umbral": 0.65,
-        "cobertura": 0.0,
-        "exactitud": null
+        "cobertura": 0.00045495905368516835,
+        "exactitud": 1.0
       },
       {
         "umbral": 0.7,
@@ -223,27 +223,27 @@
     "umbral_exactitud_por_cobertura": {
       "umbral": 0.0,
       "cobertura": 1.0,
-      "exactitud": 0.09417652411282984
+      "exactitud": 0.11010009099181074
     },
     "temperatura_por_persona": {
-      "uaemex-01": 3.3145512480634927,
-      "uaemex-02": 3.125458391995726,
-      "uaemex-03": 3.3145512480634927,
-      "uaemex-04": 3.3145512480634927,
-      "uaemex-05": 3.3145512480634927,
-      "uaemex-06": 3.3145512480634927,
-      "uaemex-07": 2.9471531525734274,
-      "uaemex-08": 3.3145512480634927,
-      "uaemex-09": 3.3145512480634927
+      "uaemex-01": 2.7790201037286337,
+      "uaemex-02": 2.7790201037286337,
+      "uaemex-03": 2.7790201037286337,
+      "uaemex-04": 2.7790201037286337,
+      "uaemex-05": 2.7790201037286337,
+      "uaemex-06": 2.7790201037286337,
+      "uaemex-07": 2.620478929024878,
+      "uaemex-08": 2.7790201037286337,
+      "uaemex-09": 2.7790201037286337
     }
   },
-  "temperatura_final": 3.125458391995726,
+  "temperatura_final": 2.7790201037286337,
   "umbral_elegido": {
     "umbral": 0.0,
     "cobertura": 1.0,
-    "exactitud": 0.09417652411282984
+    "exactitud": 0.11010009099181074
   },
-  "criterio": "menor umbral con exactitud de lo respondido >= 0.9; si ninguno, el que maximiza exactitud × cobertura (curva calibrada)",
+  "criterio": "menor umbral con exactitud de lo respondido >= 0.9 y cobertura >= 0.2; si ninguno, el que maximiza exactitud × cobertura (curva calibrada)",
   "senas_desconocidas": {
     "glosas_desconocidas": [
       "ABRAZAR",
@@ -303,7 +303,7 @@
       "VIERNES",
       "ZACATECAS"
     ],
-    "auroc_conocidas_vs_desconocidas": 0.5209893692963671,
+    "auroc_conocidas_vs_desconocidas": 0.49131086286842496,
     "umbral": 0.0,
     "rechazo_desconocidas": 0.0,
     "rechazo_conocidas": 0.0
