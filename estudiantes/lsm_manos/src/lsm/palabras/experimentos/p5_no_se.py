@@ -19,8 +19,11 @@ cada persona se ajusta con las salidas de las otras personas de validación.
 Se reporta todo sin calibrar y calibrado.
 
 El umbral de la página se elige aquí: el menor u con exactitud de lo
-respondido ≥ 0.9 en validación (si ninguno llega, se reporta y la página usa
-el que maximiza exactitud × cobertura).
+respondido ≥ 0.9 en validación que todavía responda al menos a COBERTURA_MINIMA
+de las señas (si ninguno llega, se reporta y la página usa el que maximiza
+exactitud × cobertura). Sin esa cobertura mínima el criterio llegó a elegir
+un umbral que respondía al 0.7 % de las señas (14 de 15 bien): una página que
+casi siempre dice «no sé», con una exactitud estimada sobre 15 señas.
 
 Con --iteso o --propios esos datos entran al entrenamiento de cada pliegue
 (se valida igual, con las personas de UAEMex y las del dataset propio): así
@@ -45,6 +48,7 @@ from .comun import dejando_una_persona_fuera, personas_de_validacion, preparar
 
 UMBRALES = np.round(np.arange(0.0, 1.0, 0.05), 2)
 EXACTITUD_OBJETIVO = 0.9
+COBERTURA_MINIMA = 0.2
 FRACCION_DESCONOCIDAS = 0.2
 
 
@@ -82,7 +86,8 @@ def calibrado_sin_trampa(salidas):
 def resumen_de_confianza(P, y):
     confianza, acierto = P.max(axis=1), P.argmax(axis=1) == y
     puntos = curva(confianza, acierto)
-    elegido = next((p for p in puntos if p["exactitud"] is not None and p["exactitud"] >= EXACTITUD_OBJETIVO), None)
+    elegido = next((p for p in puntos if p["exactitud"] is not None and p["exactitud"] >= EXACTITUD_OBJETIVO
+                    and p["cobertura"] >= COBERTURA_MINIMA), None)
     respaldo = max(puntos, key=lambda p: (p["exactitud"] or 0) * p["cobertura"])
     return {"ece": ece(confianza, acierto), "curva": puntos, "umbral_objetivo": elegido,
             "umbral_exactitud_por_cobertura": respaldo}
@@ -180,7 +185,8 @@ def main():
         "calibrado": {**calibrado, "temperatura_por_persona": taus},
         "temperatura_final": tau_final,
         "umbral_elegido": elegido,
-        "criterio": f"menor umbral con exactitud de lo respondido >= {EXACTITUD_OBJETIVO}; si ninguno, "
+        "criterio": f"menor umbral con exactitud de lo respondido >= {EXACTITUD_OBJETIVO} y cobertura >= "
+                    f"{COBERTURA_MINIMA}; si ninguno, "
                     "el que maximiza exactitud × cobertura (curva calibrada)",
         "senas_desconocidas": abierto,
         "entorno": entorno(),
